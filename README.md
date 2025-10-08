@@ -13,7 +13,7 @@ The model cannot be used commercially, but I've implemented it here for educatio
 The primary goal is to create a simple, intuitive interface where a user can:
   1. Select a .wav audio file from their device OR record a short audio segment on the spot.
   2. Initiate an emotion detection process by running the inputted file / clip into the wav2vec2 model.
-  3. Receive a clear emotional classification based on the model's output & raw values
+  3. Receive a clear emotional classification based on the model's output & raw values.
 
 ## Core Technologies ##
 * Language: **Kotlin**
@@ -24,9 +24,9 @@ The primary goal is to create a simple, intuitive interface where a user can:
 ## How to Find the Code ##
 All of the primary application source code for this project is located within the following *directory:/app/src/main/java/com/example/myapplication/*
 
-Inside, you will find key files such as:
+Inside, you will find key files such as (*but not limited to*):
 * MainActivity.kt: The main entry point and UI controller.
-* EmotionPredictor.kt: The class responsible for handling the ONNX model
+* EmotionPredictor.kt: The class responsible for handling the ONNX model.
 * EmotionMapper.kt: The logic for converting the model's raw numerical output into meaningful emotion labels.
 
 # Important Note on the ONNX Model #
