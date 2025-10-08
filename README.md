@@ -23,7 +23,7 @@ The primary goal is to create a simple, intuitive interface where a user can:
 
 ## How to Find the Code ##
 All of the primary application source code for this project is located within the following directory:
-# */app/src/main/java/com/example/myapplication/* #
+### */app/src/main/java/com/example/myapplication/* ###
 
 Inside, you will find key files such as (*but not limited to*):
 * MainActivity.kt: The main entry point and UI controller.
