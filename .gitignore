@@ -1,0 +1,15 @@
+
+    # Build folders
+    /build
+    /app/build
+
+    # IDE files
+    .idea/
+    *.iml
+    .gradle
+
+    # Local properties
+    local.properties
+
+    # ONNX Model - The most important rule
+    *.onnx
