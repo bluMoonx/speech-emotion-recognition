@@ -10,74 +10,112 @@ import kotlin.math.sqrt
 private const val TAG_PREPARE = "PrepareOnnxInput"
 
 // --- 1. WAV HEADER PARSER ---
-fun parseWavHeader(inputStream: InputStream): Triple<Int, Int, Int>? {
-    try {
-        val headerBytes = ByteArray(12)
-        inputStream.read(headerBytes, 0, 12)
+// In PrepareOnnxInput.kt
 
-        if (String(headerBytes, 0, 4) != "RIFF" || String(headerBytes, 8, 4) != "WAVE") {
-            Log.e(TAG_PREPARE, "Invalid WAV file: missing RIFF/WAVE markers.")
+// --- 1. WAV HEADER PARSER ---
+// REPLACE your old function with this new one.
+// In PrepareOnnxInput.kt
+
+// In PrepareOnnxInput.kt
+
+fun parseWavHeader(inputStream: InputStream): Triple<Int, Int, Int>? {
+    // This is a special input stream that allows us to peek ahead without consuming bytes.
+    // This is critical for reading chunk sizes correctly without losing our place.
+    val bufferedStream = inputStream.buffered()
+
+    try {
+        val riffHeader = ByteArray(12)
+        if (bufferedStream.read(riffHeader) < 12) {
+            Log.e(TAG_PREPARE, "FATAL: File is too small to be a WAV file (< 12 bytes).")
             return null
         }
 
-        var sampleRate = 0
-        var numChannels = 0
-        var bitsPerSample = 0
-        var foundFmt = false
+        if (String(riffHeader, 0, 4) != "RIFF" || String(riffHeader, 8, 4) != "WAVE") {
+            Log.e(TAG_PREPARE, "FATAL: Missing 'RIFF' or 'WAVE' markers. This is not a WAV file.")
+            return null
+        }
+        Log.i(TAG_PREPARE, "SUCCESS: 'RIFF' and 'WAVE' markers found. Proceeding to parse chunks.")
 
-        while (true) {
+        var sampleRate: Int? = null
+        var numChannels: Int? = null
+        var bitsPerSample: Int? = null
+        var foundFmtChunk = false
+
+        while (bufferedStream.available() > 0) {
             val chunkHeader = ByteArray(8)
-            val read = inputStream.read(chunkHeader, 0, 8)
-            if (read < 8) {
-                Log.e(TAG_PREPARE, "Reached end of stream before finding 'data' chunk.")
-                return null
+            val bytesRead = bufferedStream.read(chunkHeader)
+
+            if (bytesRead < 8) {
+                Log.w(TAG_PREPARE, "PARSING END: Could not read next full chunk header. End of stream or corrupt file.")
+                break
             }
 
             val chunkId = String(chunkHeader, 0, 4)
             val chunkSize = ByteBuffer.wrap(chunkHeader, 4, 4).order(ByteOrder.LITTLE_ENDIAN).int
-            Log.d(TAG_PREPARE, "Found chunk: '$chunkId' with size: $chunkSize")
+            Log.d(TAG_PREPARE, "--> Found chunk: '$chunkId' with reported size: $chunkSize")
+
+            // CRITICAL CHECK for odd-sized chunks. Some software writes an extra padding byte.
+            val finalChunkSize = if (chunkSize % 2 != 0) chunkSize + 1 else chunkSize
 
             when (chunkId) {
                 "fmt " -> {
-                    foundFmt = true
-                    val fmtChunk = ByteArray(chunkSize)
-                    inputStream.read(fmtChunk, 0, chunkSize)
-                    val fmtBuffer = ByteBuffer.wrap(fmtChunk).order(ByteOrder.LITTLE_ENDIAN)
-                    val audioFormat = fmtBuffer.short
-                    if (audioFormat.toInt() != 1) { // 1 = PCM
-                        Log.e(TAG_PREPARE, "Not PCM format. Code: $audioFormat")
+                    if (chunkSize < 16) {
+                        Log.e(TAG_PREPARE, "FATAL: 'fmt ' chunk is malformed (size < 16).")
                         return null
                     }
+                    val fmtChunkBytes = ByteArray(chunkSize)
+                    if (bufferedStream.read(fmtChunkBytes) < chunkSize) {
+                        Log.e(TAG_PREPARE, "FATAL: Could not read the full 'fmt ' chunk body.")
+                        return null
+                    }
+
+                    val fmtBuffer = ByteBuffer.wrap(fmtChunkBytes).order(ByteOrder.LITTLE_ENDIAN)
+                    val audioFormat = fmtBuffer.short.toInt()
+                    if (audioFormat != 1 && audioFormat != 3) { // 1 = PCM Integer, 3 = PCM Float
+                        Log.e(TAG_PREPARE, "FATAL: Unsupported audio format. Expected PCM (1) or PCM Float (3), but got $audioFormat.")
+                        return null
+                    }
+
+
                     numChannels = fmtBuffer.short.toInt()
                     sampleRate = fmtBuffer.int
                     fmtBuffer.int // Skip byteRate
                     fmtBuffer.short // Skip blockAlign
                     bitsPerSample = fmtBuffer.short.toInt()
+                    foundFmtChunk = true
+                    Log.i(TAG_PREPARE, "SUCCESS: Parsed 'fmt ' chunk. SR=$sampleRate, Channels=$numChannels, Bits=$bitsPerSample")
                 }
                 "data" -> {
-                    if (!foundFmt) {
-                        Log.e(TAG_PREPARE, "'data' chunk found before 'fmt ' chunk.")
+                    if (foundFmtChunk) {
+                        Log.i(TAG_PREPARE, "SUCCESS: Found 'data' chunk after 'fmt'. Header parsing is complete.")
+                        return Triple(sampleRate!!, numChannels!!, bitsPerSample!!)
+                    } else {
+                        Log.e(TAG_PREPARE, "FATAL: Found 'data' chunk before 'fmt' chunk. This parser cannot handle that file structure.")
                         return null
                     }
-                    Log.d(TAG_PREPARE, "Header parsing complete. SR=$sampleRate, Channels=$numChannels, Bits=$bitsPerSample")
-                    // After finding 'data', we have what we need and can stop parsing the header.
-                    return Triple(sampleRate, numChannels, bitsPerSample)
                 }
                 else -> {
-                    // Skip chunks we don't care about
-                    val skipped = inputStream.skip(chunkSize.toLong())
-                    if (skipped != chunkSize.toLong()) {
-                        Log.e(TAG_PREPARE, "Failed to skip chunk '$chunkId' completely.")
-                        return null
+                    Log.d(TAG_PREPARE, "INFO: Skipping non-essential chunk '$chunkId' of size $finalChunkSize bytes.")
+                    val skipped = bufferedStream.skip(finalChunkSize.toLong())
+                    if (skipped < finalChunkSize.toLong()) {
+                        Log.w(TAG_PREPARE, "PARSING END: Could not skip full chunk. Reached end of stream.")
+                        break
                     }
                 }
             }
         }
+
+        Log.e(TAG_PREPARE, "FATAL: Looped through the entire file but did not find a 'data' chunk after the 'fmt ' chunk. 'fmt' found: $foundFmtChunk")
+        return null
+
     } catch (e: Exception) {
-        Log.e(TAG_PREPARE, "Exception during WAV header parsing: ${e.message}", e)
+        Log.e(TAG_PREPARE, "FATAL EXCEPTION during WAV header parsing: ${e.message}", e)
         return null
     }
 }
+
+
+
 
 
 // --- 2. BYTE-TO-SHORT CONVERTERS (ALL IN ONE PLACE) ---

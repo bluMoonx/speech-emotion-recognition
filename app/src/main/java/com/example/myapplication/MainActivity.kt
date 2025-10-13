@@ -12,15 +12,18 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.draw.clip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
@@ -31,7 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.isEmpty
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,12 +45,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.compose.foundation.Canvas
-import androidx.compose.ui.geometry.Offset
-import kotlinx.coroutines.delay
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
 
 private const val TAG = "ULTRA_DEBUG"
-private const val TARGET_SAMPLE_RATE = 16000
 
 // --- AppState & Data Classes (DEFINED ONCE) ---
 sealed interface AppState {
@@ -76,7 +81,14 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var pickAudioLauncher: ActivityResultLauncher<Intent>
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
+    private val Triple<Int, Int, Int>.sampleRate: Int
+        get() = this.first
 
+    private val Triple<Int, Int, Int>.numChannels: Int
+        get() = this.second
+
+    private val Triple<Int, Int, Int>.bitsPerSample: Int
+        get() = this.third
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -159,30 +171,39 @@ class MainActivity : ComponentActivity() {
         withContext(Dispatchers.Main) { onStart() }
         try {
             contentResolver.openInputStream(uri)?.use { inputStream ->
+                // Step 1: Parse the header to know the original format
                 val headerInfo = parseWavHeader(inputStream)
-                    ?: throw Exception("Failed to parse WAV header.")
-                val (sampleRate, numChannels, bitsPerSample) = headerInfo
-                if (sampleRate != TARGET_SAMPLE_RATE || numChannels != 1 || bitsPerSample != 16) {
-                    throw Exception("Audio format must be 16kHz, 16-bit, mono.")
-                }
-                val audioBytes = inputStream.readBytes()
-                val shortArray = pcm16BitByteArrayToShortArray(audioBytes)
-                    ?: throw Exception("Failed to convert audio bytes.")
-                if (shortArray.isEmpty()) throw Exception("Audio data is empty.")
+                    ?: throw Exception("Failed to parse WAV header. Not a valid WAV file.")
 
+                val audioBytes = inputStream.readBytes()
+
+                // Step 2: Use the universal converter to get the data into the required format
+                Log.d(TAG, "Original format: ${headerInfo.sampleRate}Hz, ${headerInfo.bitsPerSample}-bit, ${headerInfo.numChannels}-channel. Converting to target format...")
+                val shortArray = AudioConverter.convertToTargetFormat(audioBytes, headerInfo)
+                    ?: throw Exception("Unsupported audio format or failed to convert. Original: ${headerInfo.bitsPerSample}-bit.")
+
+                if (shortArray.isEmpty()) {
+                    throw Exception("Audio data is empty after conversion.")
+                }
+                Log.d(TAG, "Conversion successful. ${shortArray.size} samples ready for model.")
+
+                // Step 3: Pre-process and predict as before
                 val processedAudio = preprocessAudioForModel(shortArray)
                     ?: throw Exception("Audio preprocessing returned null.")
 
                 val prediction = emotionPredictor.predict(processedAudio)
                     ?: throw Exception("ONNX model failed to return a result.")
+
                 val vector = EmotionVector(prediction[0], prediction[2], prediction[1])
                 withContext(Dispatchers.Main) { onSuccess(vector) }
+
             } ?: throw Exception("Failed to open input stream for URI.")
         } catch (e: Exception) {
             Log.e(TAG, "Detection failed", e)
             withContext(Dispatchers.Main) { onFailure(e.message ?: "An unknown error occurred.") }
         }
     }
+
 
     @SuppressLint("Range")
     private fun getFileName(uri: Uri): String {
@@ -243,73 +264,120 @@ fun FileSelectionScreen(
     appState: AppState,
     onOpenFileClick: () -> Unit,
     onRecordAudioClick: () -> Unit,
-    onDetectClick: (String, Uri) -> Unit,
-    onPlayRecording: (Uri) -> Unit // <-- ADD THIS PARAMETER
+    onDetectClick: (String, Uri) -> Unit,onPlayRecording: (Uri) -> Unit
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        // Main vertical arrangement is now handled by Spacers inside
     ) {
-        val isButtonEnabled = appState !is AppState.Detecting && appState !is AppState.Loading
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Tap to Record Audio", fontWeight = FontWeight.SemiBold)
-            IconButton(onClick = onRecordAudioClick, enabled = isButtonEnabled) {
-                Icon(imageVector = Icons.Default.Mic, "Record Audio", modifier = Modifier.size(48.dp))
-            }
-        }
-        Spacer(Modifier.height(8.dp))
-        Text("or")
-        Spacer(Modifier.height(8.dp))
-        Button(onClick = onOpenFileClick, enabled = isButtonEnabled) {
-            Text(if (appState is AppState.Idle) "Open WAV File from Device" else "Open New File")
-        }
-        Spacer(Modifier.height(24.dp))
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            when (appState) {
-                is AppState.Idle -> {}
-                is AppState.Loading -> CircularProgressIndicator()
-                is AppState.Success -> {
-                    Text("✅ Ready for Analysis ✅", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text("File: ${appState.fileName}")
-                    Spacer(Modifier.height(16.dp))
+        // --- 1. TOP SPACER ---
+        // Pushes everything down from the top edge of the screen.
+        Spacer(modifier = Modifier.weight(1f))
 
-                    // --- START OF CHANGES ---
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(24.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Replay Button
-                        Button(onClick = { onPlayRecording(appState.fileUri) }) {
-                            Icon(Icons.Default.PlayArrow, "Play")
-                            Spacer(Modifier.width(8.dp))
-                            Text("Replay")
-                        }
-                        // Detect Button
-                        Button(onClick = { onDetectClick(appState.fileName, appState.fileUri) }) {
-                            Text("Detect Emotion")
+        // --- 2. DYNAMIC CONTENT AREA (RESULTS, LOADING, ETC.) ---
+        // This Box ensures that the content area has a consistent minimum height
+        // so the layout doesn't jump around too much.
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(2f), // Takes up a good portion of the middle screen
+            contentAlignment = Alignment.Center
+        ) {
+            when (appState) {
+                is AppState.Loading -> {
+                    CircularProgressIndicator()
+                    Text("Loading ${appState.fileName}...")
+                }
+                is AppState.Success -> {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Ready to analyze:", style = MaterialTheme.typography.titleMedium)
+                        Text(appState.fileName, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(16.dp))
+                        Row {
+                            Button(onClick = { onDetectClick(appState.fileName, appState.fileUri) }) {
+                                Text("Detect Emotion")
+                            }
+                            Spacer(Modifier.width(16.dp))
+                            Button(onClick = { onPlayRecording(appState.fileUri) }) {
+                                Text("Replay")
+                            }
                         }
                     }
-                    // --- END OF CHANGES ---
                 }
                 is AppState.Detecting -> {
-                    CircularProgressIndicator()
-                    Text("Detecting emotion in ${appState.fileName}...")
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        CircularProgressIndicator()
+                        Text("Detecting emotion in ${appState.fileName}...")
+                    }
                 }
                 is AppState.DetectionSuccess -> {
-                    Text("✨ Detection Complete! ✨", fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(16.dp))
                     EmotionResult(vector = appState.result)
                 }
                 is AppState.Failure -> {
-                    Text("❌ Error ❌", fontSize = 24.sp, color = Color.Red)
-                    Text(appState.message, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 16.dp))
+                    Text(
+                        text = appState.message,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center
+                    )
                 }
-                else -> {}
+                else -> {
+                    // This space is intentionally left blank for the Idle state.
+                    // The recording button is now shown below this dynamic area.
+                }
             }
         }
+
+        // --- 3. THE "ALWAYS VISIBLE" ACTION BUTTONS ---
+        // This section is now outside the 'when' block, so it always shows.
+
+        // The recording button and its text
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.padding(top = 24.dp) // Add space above the mic
+        ) {
+            IconButton(
+                onClick = onRecordAudioClick,
+                modifier = Modifier.size(72.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Mic,
+                        contentDescription = "Record Audio",
+                        modifier = Modifier.size(36.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp)) // Smaller spacer
+            Text(
+                text = "Tap to Record Audio",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+        }
+
+        // The file open button
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = onOpenFileClick) {
+            Text("Or Open an Audio File")
+        }
+
+        // --- 4. BOTTOM SPACER ---
+        // Pushes everything up from the bottom edge.
+        Spacer(modifier = Modifier.weight(1f))
     }
 }
+
 
 
 @Composable
@@ -362,18 +430,41 @@ fun RecordingScreen(amplitude: Float, onStopRecording: () -> Unit, onStartRecord
 @Composable
 fun EmotionResult(vector: EmotionVector) {
     val mappedEmotion = mapVectorToEmotion(vector)
-    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    val detailsText = """
+        Valence:   ${"%.4f".format(vector.valence)}
+        Arousal:   ${"%.4f".format(vector.arousal)}
+        Dominance: ${"%.4f".format(vector.dominance)}
+    """.trimIndent()
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        // The main emotion label (e.g., "Angry")
         Text(
             text = mappedEmotion.label,
             fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary
         )
+
+        // The description of the emotion
         Text(
             text = mappedEmotion.description,
             fontSize = 16.sp,
             modifier = Modifier.padding(horizontal = 16.dp),
             textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // The raw values for your debugging
+        Text(
+            text = detailsText,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            fontFamily = FontFamily.Monospace // Makes the numbers line up nicely
         )
     }
 }
