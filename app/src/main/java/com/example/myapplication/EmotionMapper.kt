@@ -1,77 +1,85 @@
-// In EmotionMapper.kt
+// C:/Users/moonw/AndroidStudioProjects/MyApplication/app/src/main/java/com/example/myapplication/EmotionMapper.kt
 
 package com.example.myapplication
 
-data class MappedEmotion(val label: String, val description: String)
-
 /**
- * Maps the model's output vector (Arousal, Dominance, Valence) to a human-readable emotion
- * using a 13-state model to catch more nuanced cases.
+ * Maps a 3D emotion vector (Arousal, Valence, Dominance) to a specific MappedEmotion.
+ * FINAL-FINAL REVISION: This version uses a single, structured `when` block to eliminate
+ * logical fall-through errors and create more precise emotion "pockets".
  */
 fun mapVectorToEmotion(vector: EmotionVector): MappedEmotion {
-    val arousal = vector.arousal
-    val dominance = vector.dominance
-    val valence = vector.valence
+    val (arousal, valence, dominance) = vector
 
-    // Define the boundaries. The 'midPoint' is the main separator,
-    // while 'spread' creates a "neutral zone" for more nuanced emotions.
-    val midPoint = 0.5f
-    val spread = 0.15f // Creates a zone from 0.35 to 0.65
+    return when {
+        // --- HIGHEST PRIORITY ZONES (CLEAR SIGNALS) ---
 
-    // --- NEW: SPECIAL CASE FOR DESPERATION/PANIC ---
-    // This state is characterized by very high arousal and very low valence/dominance.
-    // It's a specific kind of fear/anxiety that deserves its own category.
-    if (arousal > 0.75f && valence < 0.25f && dominance < 0.35f) {
-        return MappedEmotion("Panicked", "A sudden, overwhelming fear or anxiety, often leading to frantic behavior.")
-    }
-
-
-    // Top-Right Quadrant: High Arousal, High Valence (Positive, High Energy)
-    if (arousal >= midPoint && valence >= midPoint) {
-        return when {
-            // High Dominance -> Clearly in control and energetic
-            dominance > midPoint + spread -> MappedEmotion("Triumphant", "Powerful, victorious, and full of positive energy.")
-            // Low Dominance -> Energetic but less assertive
-            dominance < midPoint - spread -> MappedEmotion("Playful", "Lighthearted, spontaneous, and joyfully energetic.")
-            // Mid-range Dominance -> The core "Happy/Excited" state
-            else -> MappedEmotion("Excited", "Full of positive energy, anticipation, and happiness.")
+        // Ecstatic/Triumphant: Very high energy, very positive.
+        arousal > 0.7 && valence > 0.7 -> {
+            if (dominance > 0.7) MappedEmotion("Triumphant", "Feeling pride and joy at a great victory. (e.g., 'I DID IT!')")
+            else MappedEmotion("Ecstatic", "Overwhelming happiness or joyful excitement. (e.g., 'YUM SO GOOD!')")
         }
-    }
-    // Top-Left Quadrant: High Arousal, Low Valence (Negative, High Energy)
-    else if (arousal >= midPoint && valence < midPoint) {
-        return when {
-            // High Dominance -> Assertive and negative
-            dominance > midPoint + spread -> MappedEmotion("Angry", "Feeling hostile, powerful, and ready to assert.")
-            // Low Dominance -> Overwhelmed and negative
-            dominance < midPoint - spread -> MappedEmotion("Fearful", "Feeling threatened, overwhelmed, and not in control.")
-            // Mid-range Dominance -> A general state of high-energy distress
-            else -> MappedEmotion("Anxious", "A state of unease, worry, nervousness, and high tension.")
+        // Infuriated/Panicked: Very high energy, very negative.
+        arousal > 0.7 && valence < 0.3 -> {
+            if (dominance > 0.7) MappedEmotion("Infuriated", "Extremely angry and impatient. (e.g., 'WHAT THE HELL?!')")
+            else MappedEmotion("Panicked", "Sudden uncontrollable fear or anxiety.")
         }
-    }
-    // Bottom-Left Quadrant: Low Arousal, Low Valence (Negative, Low Energy)
-    else if (arousal < midPoint && valence < midPoint) {
-        return when {
-            // High Dominance -> A controlled, low-energy negativity
-            dominance > midPoint + spread -> MappedEmotion("Bored", "Disinterested, underwhelmed, but not necessarily unhappy.")
-            // Low Dominance -> A helpless, deep-seated low-energy negativity
-            dominance < midPoint - spread -> MappedEmotion("Depressed", "A persistent feeling of deep sadness and helplessness.")
-            // Mid-range Dominance -> The core "Sad" state
-            else -> MappedEmotion("Sad", "A general feeling of unhappiness and sorrow, but not necessarily helpless.")
+        // Serene/Calm: Very low energy, very positive.
+        arousal < 0.25 && valence > 0.7 -> {
+            if (dominance < 0.5) MappedEmotion("Serene", "Peaceful and untroubled. (e.g., 'I am zen...')")
+            else MappedEmotion("Calm", "Relaxed and free from strong emotion.")
         }
-    }
-    // Bottom-Right Quadrant: Low Arousal, High Valence (Positive, Low Energy)
-    else if (arousal < midPoint && valence >= midPoint) {
-        return when {
-            // High Dominance -> Calm and in control
-            dominance > midPoint + spread -> MappedEmotion("Content", "Peacefully satisfied and feeling in control of the situation.")
-            // Low Dominance -> Calm and submissive
-            dominance < midPoint - spread -> MappedEmotion("Serene", "Deeply calm, tranquil, and at peace with the world.")
-            // Mid-range Dominance -> A general state of pleasant calm
-            else -> MappedEmotion("Relaxed", "Free from tension and anxiety; calm and at ease.")
+        // Miserable/Sad: Very low energy, very negative.
+        arousal < 0.25 && valence < 0.25 -> {
+            if (dominance < 0.4) MappedEmotion("Miserable", "Wretchedly unhappy. (e.g., 'Life is miserable...')")
+            else MappedEmotion("Sad", "Feeling or showing sorrow.")
         }
-    }
 
-    // Default fallback for values that sit exactly in the middle of all axes
-    return MappedEmotion("Neutral", "Emotion is not strongly expressed in any direction.")
+        // --- HIGH ENERGY ZONES (SECONDARY PRIORITY) ---
+
+        // Astonished/Excited: High energy, positive.
+        arousal > 0.6 && valence > 0.5 -> {
+            if (dominance < 0.5) MappedEmotion("Astonished", "Greatly surprised or impressed. (e.g., 'WOWWW!')")
+            else MappedEmotion("Excited", "Very enthusiastic and eager.")
+        }
+        // Angry/Disgusted: High energy, negative.
+        arousal > 0.6 && valence < 0.45 -> {
+            if (dominance < 0.5) MappedEmotion("Disgusted", "A feeling of revulsion or profound disapproval. (e.g., 'Ew wtf?!')")
+            else MappedEmotion("Angry", "A strong feeling of annoyance or displeasure.")
+        }
+
+        // --- LOW ENERGY ZONES (SECONDARY PRIORITY) ---
+
+        // Contented/Relieved: Low energy, positive.
+        arousal < 0.35 && valence > 0.6 -> {
+            if (dominance > 0.6) MappedEmotion("Relieved", "Feeling reassured following anxiety.")
+            else MappedEmotion("Contented", "Quietly happy and at ease.")
+        }
+        // Dejected/Bored/Tired: Low energy, negative.
+        arousal < 0.4 && valence < 0.4 -> {
+            if (valence < 0.2) MappedEmotion("Dejected", "Sad and depressed; dispirited.")
+            else if (arousal < 0.2) MappedEmotion("Bored", "Feeling weary and unoccupied.")
+            else MappedEmotion("Tired", "In need of rest. (e.g., 'let me rest...')")
+        }
+
+        // --- MID-GROUND / DEFAULT ZONES ---
+
+        // Happy/Amused: Mid energy, positive.
+        valence > 0.6 -> {
+            if (dominance > 0.6) MappedEmotion("Happy", "Feeling or showing pleasure or contentment.")
+            else MappedEmotion("Amused", "Finding something funny or entertaining. (e.g., 'This is easy *smirk*')")
+        }
+        // Contempt/Annoyed: Mid energy, negative.
+        valence < 0.4 -> {
+            if (dominance > 0.6) MappedEmotion("Contempt", "The feeling that something is worthless. (e.g., 'Ugh, are you serious??')")
+            else MappedEmotion("Annoyed", "Slightly angry or irritated. (e.g., 'This is so bad...')")
+        }
+        // Disappointed/Concerned: Mid energy, slightly negative.
+        valence < 0.55 -> {
+            if (dominance < 0.5) MappedEmotion("Concerned", "Worried or troubled.")
+            else MappedEmotion("Disappointed", "Sad because one's hopes were not fulfilled.")
+        }
+
+        // If nothing else matches, it's Neutral.
+        else -> MappedEmotion("Neutral", "No dominant emotion detected.")
+    }
 }
-

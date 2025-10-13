@@ -12,54 +12,143 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.isEmpty
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.myapplication.ui.theme.MyApplicationTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.example.myapplication.ui.theme.MyApplicationTheme
-import androidx.compose.foundation.layout.*
-
-
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
+import kotlinx.coroutines.delay
 
 private const val TAG = "ULTRA_DEBUG"
 private const val TARGET_SAMPLE_RATE = 16000
 
-// State definitions remain the same
+// --- AppState & Data Classes (DEFINED ONCE) ---
 sealed interface AppState {
     object Idle : AppState
-    data class Loading(val fileName: String) : AppState // Renamed for clarity
+    object Recording : AppState
+    data class Loading(val fileName: String) : AppState
     data class Success(val fileName: String, val fileUri: Uri) : AppState
     data class Detecting(val fileName: String) : AppState
-    data class DetectionSuccess(val fileName: String, val result: EmotionVector) : AppState
+    data class DetectionSuccess(val result: EmotionVector) : AppState
     data class Failure(val message: String) : AppState
+    data class PostRecordingReview(val fileName: String, val fileUri: Uri) : AppState
 }
 
 data class EmotionVector(val arousal: Float, val valence: Float, val dominance: Float)
+data class MappedEmotion(val label: String, val description: String)
 
+
+// ===================================
+//  MainActivity CLASS STARTS HERE
+// ===================================
 class MainActivity : ComponentActivity() {
-    private val emotionPredictor by lazy { EmotionPredictor(this) }
-    private lateinit var pickAudioLauncher: ActivityResultLauncher<Intent>
 
-// In MainActivity.kt, ADD this function inside the MainActivity class
+    private val emotionPredictor by lazy { EmotionPredictor(this) }
+    private val audioPlayer by lazy { AudioPlayer(this) }
+    private val audioRecorder by lazy { WavAudioRecorder(this) }
+
+    private lateinit var pickAudioLauncher: ActivityResultLauncher<Intent>
+    private lateinit var permissionLauncher: ActivityResultLauncher<String>
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        var appState: AppState by mutableStateOf(AppState.Idle)
+        val coroutineScope = CoroutineScope(Dispatchers.Default)
+
+        permissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                if (isGranted) {
+                    appState = AppState.Recording
+                } else {
+                    appState = AppState.Failure("Microphone permission is required to record audio.")
+                }
+            }
+
+        pickAudioLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    result.data?.data?.let { uri ->
+                        val fileName = getFileName(uri)
+                        appState = AppState.Success(fileName, uri)
+                    } ?: run {
+                        appState = AppState.Failure("Could not retrieve file URI.")
+                    }
+                }
+            }
+
+        setContent {
+            MyApplicationTheme {
+                MainScreen(
+                    appState = appState,
+                    amplitude = audioRecorder.amplitude.value,
+                    onOpenFileClick = {
+                        val mimeTypes = arrayOf("audio/wav", "audio/x-wav")
+                        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                            type = "audio/*"
+                            putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+                        }
+                        pickAudioLauncher.launch(intent)
+                    },
+                    onRecordAudioClick = {
+                        permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                    },
+                    onStopRecording = {
+                        val recordingUri = audioRecorder.stop()
+                        if (recordingUri != null) {
+                            val fileName = "My Recording.wav"
+                            appState = AppState.PostRecordingReview(fileName, recordingUri)
+                        } else {
+                            appState = AppState.Failure("Failed to save recording.")
+                        }
+                    },
+                    onDetectClick = { fileName, uri ->
+                        coroutineScope.launch {
+                            detectEmotion(
+                                uri = uri,
+                                onStart = { appState = AppState.Detecting(fileName) },
+                                onSuccess = { vector -> appState = AppState.DetectionSuccess(vector) },
+                                onFailure = { message -> appState = AppState.Failure(message) }
+                            )
+                        }
+                    },
+                    onStartRecording = { audioRecorder.start() },
+                    onPlayRecording = { uri ->
+                        // Convert the Uri to a string path that the player can use
+                        audioPlayer.play(uri)
+                    },
+                    onReRecord = { appState = AppState.Recording }
+                )
+            }
+        }
+    }
 
     private suspend fun detectEmotion(
         uri: Uri,
@@ -68,146 +157,94 @@ class MainActivity : ComponentActivity() {
         onFailure: (String) -> Unit
     ) {
         withContext(Dispatchers.Main) { onStart() }
-
         try {
-            // Your existing, correct logic for file processing
-            val inputStream = contentResolver.openInputStream(uri)
-                ?: throw Exception("Failed to open input stream for URI.")
-
-            val headerInfo = parseWavHeader(inputStream)
-                ?: throw Exception("Failed to parse WAV header.")
-            val (sampleRate, numChannels, bitsPerSample) = headerInfo
-
-            // --- REPLACE WITH THIS BLOCK ---
-            val bytesToRead = 15 * sampleRate * (bitsPerSample / 8) * numChannels
-            val audioBytes = ByteArray(bytesToRead)
-            val bytesRead = inputStream.read(audioBytes)
-            val finalAudioBytes = audioBytes.copyOf(bytesRead)
-
-// Convert the raw audio bytes to a ShortArray based on the bit depth
-            val shortArray = when (bitsPerSample) {
-                16 -> pcm16BitByteArrayToShortArray(finalAudioBytes)
-                    ?: throw Exception("Failed to convert 16-bit audio.")
-                32 -> {
-                    // Here we need to check if the 32-bit file is Float or Integer.
-                    // The WAV header parsing needs to be updated for this, but for now,
-                    // we can try to guess or assume float, which is more common.
-                    // A simple heuristic: check if the first value is small (likely a float).
-                    val isFloat = true // For now, let's assume float.
-                    if (isFloat) {
-                        pcm32BitFloatByteArrayToShortArray(finalAudioBytes)
-                    } else {
-                        pcm32BitIntByteArrayToShortArray(finalAudioBytes)
-                    }
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                val headerInfo = parseWavHeader(inputStream)
+                    ?: throw Exception("Failed to parse WAV header.")
+                val (sampleRate, numChannels, bitsPerSample) = headerInfo
+                if (sampleRate != TARGET_SAMPLE_RATE || numChannels != 1 || bitsPerSample != 16) {
+                    throw Exception("Audio format must be 16kHz, 16-bit, mono.")
                 }
-                // You could add a case for 24-bit audio here if needed
-                // 24 -> pcm24BitByteArrayToShortArray(finalAudioBytes)
-                else -> throw Exception("Unsupported bit depth: $bitsPerSample-bit. Only 16-bit and 32-bit are supported.")
-            }
+                val audioBytes = inputStream.readBytes()
+                val shortArray = pcm16BitByteArrayToShortArray(audioBytes)
+                    ?: throw Exception("Failed to convert audio bytes.")
+                if (shortArray.isEmpty()) throw Exception("Audio data is empty.")
 
-            if (shortArray.isEmpty()) {
-                throw Exception("Audio conversion resulted in an empty array.")
-            }
-// --- END OF REPLACEMENT BLOCK ---
-
-
-            val processedAudio =
-                preprocessAudioForModel(shortArray, sampleRate, TARGET_SAMPLE_RATE, numChannels)
+                val processedAudio = preprocessAudioForModel(shortArray)
                     ?: throw Exception("Audio preprocessing returned null.")
 
-            val prediction = emotionPredictor.predict(processedAudio)
-                ?: throw Exception("ONNX model failed to return a result.")
-
-            val vector = EmotionVector(
-                prediction[0],
-                prediction[2],
-                prediction[1]
-            ) // Arousal, Valence, Dominance
-            withContext(Dispatchers.Main) { onSuccess(vector) }
-
+                val prediction = emotionPredictor.predict(processedAudio)
+                    ?: throw Exception("ONNX model failed to return a result.")
+                val vector = EmotionVector(prediction[0], prediction[2], prediction[1])
+                withContext(Dispatchers.Main) { onSuccess(vector) }
+            } ?: throw Exception("Failed to open input stream for URI.")
         } catch (e: Exception) {
             Log.e(TAG, "Detection failed", e)
             withContext(Dispatchers.Main) { onFailure(e.message ?: "An unknown error occurred.") }
         }
     }
 
-    // In MainActivity.kt, REPLACE the entire onCreate method with this:
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        var appState: AppState by mutableStateOf(AppState.Idle)
-        val coroutineScope = CoroutineScope(Dispatchers.Default)
-
-        // Set up the file picker launcher correctly
-        pickAudioLauncher =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    result.data?.data?.let { uri ->
-                        val fileName = getFileName(uri)
-                        // When file is picked, go to the Success state
-                        appState = AppState.Success(fileName, uri)
-                    } ?: run {
-                        // If something goes wrong getting the URI
-                        appState = AppState.Failure("Could not retrieve file URI.")
-                    }
-                }
-                // You can add an else block here to handle if the user cancels file picking
-            }
-
-        setContent {
-            // THIS 'MyApplicationTheme' WRAPPER IS THE FIX for the @Composable error
-            MyApplicationTheme {
-                FinalAttemptScreen(
-                    appState = appState,
-                    onOpenFileClick = {
-                        // Define an array of possible MIME types for WAV files
-                        val mimeTypes = arrayOf("audio/wav", "audio/x-wav")
-
-                        // Create the intent and put the array of types as an extra
-                        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-                            type = "audio/*" // Start with a broad audio category
-                            putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
-                        }
-
-                        pickAudioLauncher.launch(intent)
-                    },
-                    onDetectClick = { fileName, uri ->
-                        coroutineScope.launch {
-                            // This correctly calls your detectEmotion function
-                            detectEmotion(
-                                uri = uri,
-                                onStart = { appState = AppState.Detecting(fileName) },
-                                onSuccess = { vector ->
-                                    appState = AppState.DetectionSuccess(fileName, vector)
-                                },
-                                onFailure = { message -> appState = AppState.Failure(message) }
-                            )
-                        }
-                    }
-                )
-            }
-        }
-    }
-
     @SuppressLint("Range")
     private fun getFileName(uri: Uri): String {
-        // This uses the content resolver to query the file's display name
-        return contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-            } else {
-                "Unknown File" // Fallback if the cursor is empty
-            }
-        } ?: "Unknown File" // Fallback if the query fails
+        return contentResolver.query(uri, null, null, null, null)?.use {
+            if (it.moveToFirst()) it.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+            else "Unknown File"
+        } ?: "Unknown File"
+    }
+}
+// ===================================
+//  MainActivity CLASS ENDS HERE
+// ===================================
+
+
+// =======================================================================
+// ALL HELPER FUNCTIONS AND COMPOSABLES ARE OUTSIDE THE CLASS
+// =======================================================================
+
+fun preprocessAudioForModel(audioData: ShortArray): FloatArray? {
+    if (audioData.isEmpty()) return null
+    // Normalize from Short (-32768 to 32767) to Float (-1.0 to 1.0)
+    return FloatArray(audioData.size) { i -> audioData[i] / 32768.0f }
+}
+
+
+// --- UI COMPOSABLES ---
+
+@Composable
+fun MainScreen(
+    appState: AppState,
+    amplitude: Float,
+    onOpenFileClick: () -> Unit,
+    onRecordAudioClick: () -> Unit,
+    onStartRecording: () -> Unit,
+    onStopRecording: () -> Unit,
+    onDetectClick: (String, Uri) -> Unit,
+    onPlayRecording: (Uri) -> Unit,
+    onReRecord: () -> Unit
+) {
+    AnimatedContent(targetState = appState, label = "ScreenState") { state ->
+        when (state) {
+            is AppState.Recording -> RecordingScreen(amplitude, onStopRecording, onStartRecording)
+            is AppState.PostRecordingReview -> PostRecordingScreen(state, onDetectClick, { onPlayRecording(state.fileUri) }, onReRecord)
+            else -> FileSelectionScreen(
+                appState = state,
+                onOpenFileClick = onOpenFileClick,
+                onRecordAudioClick = onRecordAudioClick,
+                onDetectClick = onDetectClick,
+                onPlayRecording = onPlayRecording // <-- ADD THIS
+            )
+
+        }
     }
 }
 
 @Composable
-fun FinalAttemptScreen(
+fun FileSelectionScreen(
     appState: AppState,
     onOpenFileClick: () -> Unit,
-    onDetectClick: (String, Uri) -> Unit
+    onRecordAudioClick: () -> Unit,
+    onDetectClick: (String, Uri) -> Unit,
+    onPlayRecording: (Uri) -> Unit // <-- ADD THIS PARAMETER
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -215,101 +252,195 @@ fun FinalAttemptScreen(
         verticalArrangement = Arrangement.Center
     ) {
         val isButtonEnabled = appState !is AppState.Detecting && appState !is AppState.Loading
-        Button(onClick = onOpenFileClick, enabled = isButtonEnabled) {
-            Text(if (appState is AppState.Idle) "Open WAV File" else "Open New File")
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Tap to Record Audio", fontWeight = FontWeight.SemiBold)
+            IconButton(onClick = onRecordAudioClick, enabled = isButtonEnabled) {
+                Icon(imageVector = Icons.Default.Mic, "Record Audio", modifier = Modifier.size(48.dp))
+            }
         }
+        Spacer(Modifier.height(8.dp))
+        Text("or")
+        Spacer(Modifier.height(8.dp))
+        Button(onClick = onOpenFileClick, enabled = isButtonEnabled) {
+            Text(if (appState is AppState.Idle) "Open WAV File from Device" else "Open New File")
+        }
+        Spacer(Modifier.height(24.dp))
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            when (appState) {
+                is AppState.Idle -> {}
+                is AppState.Loading -> CircularProgressIndicator()
+                is AppState.Success -> {
+                    Text("✅ Ready for Analysis ✅", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("File: ${appState.fileName}")
+                    Spacer(Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        AnimatedContent(targetState = appState, label = "AppStatus") { state ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                when (state) {
-                    is AppState.Idle -> Text("Select a WAV file to begin.")
-                    is AppState.Loading -> {
-                        CircularProgressIndicator()
-                        Text("Reading ${state.fileName}...")
-                    }
-
-                    is AppState.Success -> {
-                        Text("✅ Upload Complete! ✅", fontSize = 24.sp)
-                        Text("File Ready: ${state.fileName}")
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { onDetectClick(state.fileName, state.fileUri) }) {
+                    // --- START OF CHANGES ---
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Replay Button
+                        Button(onClick = { onPlayRecording(appState.fileUri) }) {
+                            Icon(Icons.Default.PlayArrow, "Play")
+                            Spacer(Modifier.width(8.dp))
+                            Text("Replay")
+                        }
+                        // Detect Button
+                        Button(onClick = { onDetectClick(appState.fileName, appState.fileUri) }) {
                             Text("Detect Emotion")
                         }
                     }
-
-                    is AppState.Detecting -> {
-                        CircularProgressIndicator()
-                        Text("Detecting emotion in ${state.fileName}...")
-                    }
-
-                    is AppState.DetectionSuccess -> {
-                        Text("✨ Detection Complete! ✨", fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        EmotionResult(vector = state.result)
-                    }
-
-                    is AppState.Failure -> {
-                        Text("❌ Unable to Process ❌", fontSize = 24.sp)
-                        Text(
-                            "An Error Occurred",
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Red
-                        )
-                        Text(state.message)
-                    }
+                    // --- END OF CHANGES ---
                 }
+                is AppState.Detecting -> {
+                    CircularProgressIndicator()
+                    Text("Detecting emotion in ${appState.fileName}...")
+                }
+                is AppState.DetectionSuccess -> {
+                    Text("✨ Detection Complete! ✨", fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(16.dp))
+                    EmotionResult(vector = appState.result)
+                }
+                is AppState.Failure -> {
+                    Text("❌ Error ❌", fontSize = 24.sp, color = Color.Red)
+                    Text(appState.message, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 16.dp))
+                }
+                else -> {}
             }
         }
     }
 }
 
-// In MainActivity.kt, REPLACE the EmotionResult function with this:
+
+@Composable
+fun RecordingScreen(amplitude: Float, onStopRecording: () -> Unit, onStartRecording: () -> Unit) {
+    // This list will store the history of amplitudes for the scrolling effect
+    val amplitudes = remember { mutableStateListOf<Float>() }
+
+    // This effect will run whenever the 'amplitude' value changes.
+    // By using 'amplitude' as a key, we ensure the block always reads the LATEST value.
+    LaunchedEffect(amplitude) {
+        amplitudes.add(amplitude) // Add the latest, correct amplitude
+        // Keep the list at a manageable size (e.g., the last 100 values)
+        if (amplitudes.size > 100) {
+            amplitudes.removeAt(0)
+        }
+    }
+
+    // This effect runs only ONCE to start the recording.
+    LaunchedEffect(Unit) {
+        onStartRecording()
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("Recording...", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(32.dp))
+
+        // This call is correct and does not need to change.
+        ScrollingWaveform(
+            amplitudes = amplitudes,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .padding(horizontal = 16.dp)
+        )
+
+        Spacer(Modifier.height(32.dp))
+        IconButton(
+            onClick = { onStopRecording() },
+            modifier = Modifier.size(72.dp)
+        ) {
+            Icon(Icons.Default.Stop, "Stop Recording", tint = Color.Red, modifier = Modifier.fillMaxSize())
+        }
+    }
+}
 
 @Composable
 fun EmotionResult(vector: EmotionVector) {
-    // This is where you will call your mapping function from EmotionMapper.kt
-    // Make sure you have created the EmotionMapper.kt file from the previous step!
     val mappedEmotion = mapVectorToEmotion(vector)
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        // Display the final glorious emotion label
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = mappedEmotion.label,
-            fontSize = 34.sp,
+            fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF6750A4) // A nice purple color from the Material theme
+            color = MaterialTheme.colorScheme.primary
         )
-
-        // Display the description
         Text(
             text = mappedEmotion.description,
             fontSize = 16.sp,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = 16.dp),
+            textAlign = TextAlign.Center
         )
+    }
+}
 
-        Spacer(modifier = Modifier.height(24.dp))
+@Composable
+fun ScrollingWaveform(
+    amplitudes: List<Float>,
+    modifier: Modifier = Modifier,
+    waveColor: Color = Color.Blue,
+    waveThickness: Float = 4f
+) {
+    Canvas(modifier = modifier.background(Color.LightGray)) {
+        val canvasWidth = size.width
+        val canvasHeight = size.height
+        val middleY = canvasHeight / 2
 
-        // Display the raw values below for debugging/interest
-        Text("Raw Values:", fontWeight = FontWeight.SemiBold)
-        Row {
-            Text("Arousal:   ", fontWeight = FontWeight.SemiBold)
-            Text(String.format("%.4f", vector.arousal))
+        // Calculate the width of each bar
+        val barWidth = canvasWidth / amplitudes.size
+
+        amplitudes.forEachIndexed { index, amplitude ->
+            // Calculate the x position of the bar
+            val x = index * barWidth
+
+            // Calculate the top and bottom of the bar based on amplitude
+            // The amplitude is a value from 0.0 to 1.0
+            val barHeight = amplitude * canvasHeight
+            val top = middleY - (barHeight / 2)
+            val bottom = middleY + (barHeight / 2)
+
+            // Draw the vertical bar
+            drawLine(
+                color = waveColor,
+                start = androidx.compose.ui.geometry.Offset(x, top),
+                end = androidx.compose.ui.geometry.Offset(x, bottom),
+                strokeWidth = waveThickness
+            )
         }
-        Row {
-            Text("Valence:   ", fontWeight = FontWeight.SemiBold)
-            Text(String.format("%.4f", vector.valence))
+    }
+}
+@Composable
+fun PostRecordingScreen(
+    appState: AppState.PostRecordingReview,
+    onDetectClick: (String, Uri) -> Unit,
+    onPlayClick: () -> Unit,
+    onReRecordClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
+    ) {
+        Text("Recording Complete", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(appState.fileName)
+        Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
+            Button(onClick = onPlayClick) {
+                Icon(Icons.Default.PlayArrow, "Play")
+                Spacer(Modifier.width(8.dp))
+                Text("Replay")
+            }
+            Button(onClick = onReRecordClick, colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)) {
+                Icon(Icons.Default.Refresh, "Re-record")
+                Spacer(Modifier.width(8.dp))
+                Text("Re-record")
+            }
         }
-        Row {
-            Text("Dominance: ", fontWeight = FontWeight.SemiBold)
-            Text(String.format("%.4f", vector.dominance))
+        Button(onClick = { onDetectClick(appState.fileName, appState.fileUri) }) {
+            Text("Detect Emotion From This Recording")
         }
     }
 }
