@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:1-27:12
-INJECTED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:1-27:12
-INJECTED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:1-27:12
-INJECTED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:1-27:12
+ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:1-28:12
+INJECTED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:1-28:12
+INJECTED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:1-28:12
+INJECTED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:1-28:12
 MERGED from [androidx.compose.material3:material3-android:1.2.1] C:\Users\moonw\.gradle\caches\8.13\transforms\2b6e8623eec6eb60ef830dc8739950b8\transformed\material3-release\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.compose.material:material-android:1.6.7] C:\Users\moonw\.gradle\caches\8.13\transforms\fd61e22afdcd59e4770bc62f321ce6d9\transformed\material-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.material:material-icons-core-android:1.6.7] C:\Users\moonw\.gradle\caches\8.13\transforms\0a1946c4041f92a31c158113beeb1bc1\transformed\material-icons-core-release\AndroidManifest.xml:2:1-7:12
@@ -61,9 +61,19 @@ MERGED from [com.microsoft.onnxruntime:onnxruntime-android:1.18.0] C:\Users\moon
 		INJECTED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml
 	xmlns:android
 		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:11-69
+uses-permission#android.permission.RECORD_AUDIO
+ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:4:5-71
+	android:name
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:4:22-68
+uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
+ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:5-108
+	android:maxSdkVersion
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:79-105
+	android:name
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:22-78
 application
-ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:5-25:19
-INJECTED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:5-25:19
+ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:7:5-27:19
+INJECTED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:7:5-27:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.6.7] C:\Users\moonw\.gradle\caches\8.13\transforms\141a2c58aab75dd0c5d22e9f1ddc1377\transformed\ui-tooling-release\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-tooling-android:1.6.7] C:\Users\moonw\.gradle\caches\8.13\transforms\141a2c58aab75dd0c5d22e9f1ddc1377\transformed\ui-tooling-release\AndroidManifest.xml:22:5-26:19
 MERGED from [androidx.compose.ui:ui-test-manifest:1.6.7] C:\Users\moonw\.gradle\caches\8.13\transforms\1fadcbf00b698e510d8eb214ef27cd61\transformed\ui-test-manifest-1.6.7\AndroidManifest.xml:22:5-26:19
@@ -85,45 +95,41 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\moonw\.gradle\cach
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.13.1] C:\Users\moonw\.gradle\caches\8.13\transforms\5503f5d46aa818df81ceb80fa846a793\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:12:9-35
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:14:9-35
 	android:label
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:10:9-41
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:12:9-41
 	android:fullBackupContent
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:8:9-54
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:10:9-54
 	android:roundIcon
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:11:9-54
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:13:9-54
 	android:icon
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:9:9-43
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:11:9-43
 	android:allowBackup
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:6:9-35
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:8:9-35
 	android:theme
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:13:9-51
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:15:9-51
 	android:dataExtractionRules
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:7:9-65
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:9:9-65
 activity#com.example.myapplication.MainActivity
-ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:14:9-24:20
+ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:16:9-26:20
 	android:label
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:17:13-45
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:19:13-45
 	android:exported
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:16:13-36
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:18:13-36
 	android:theme
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:18:13-55
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:20:13-55
 	android:name
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:15:13-41
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:17:13-41
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:19:13-23:29
+ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:21:13-25:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:20:17-69
+ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:22:17-69
 	android:name
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:20:25-66
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:22:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:22:17-77
+ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:24:17-77
 	android:name
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:22:27-74
-uses-permission#android.permission.RECORD_AUDIO
-ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:26:5-71
-	android:name
-		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:26:22-68
+		ADDED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:24:27-74
 uses-sdk
 INJECTED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml
