@@ -28,7 +28,7 @@ All of the primary application source code for this project is located within th
 Inside, you will find key files such as (*but not limited to*):
 * MainActivity.kt: The main entry point and UI controller.
 * EmotionPredictor.kt: The class responsible for handling the ONNX model.
-* EmotionMapper.kt: The logic for converting the model's raw numerical output into meaningful emotion labels.
+* EmotionMapper.kt: The system that converts the model's raw numerical output into emotion labels.
 
 # Important Note on the ONNX Model #
 The original machine learning model file (which I've converted from its original Pytorch status to a .onnx file out of necessity and convenience) is **NOT INCLUDED** in this repository. Due to its large size (over 500 MB), it exceeds GitHub's file size limit. The application code is structured to load a model named emotion_model_final.onnx from the app's assets folder, but you will need to provide your own model to build and run the project successfully. To do so, please use the *above link* and convert to .onnx to fully run. This repository is only meant to be used as a workspace to share code and commit saved work.
