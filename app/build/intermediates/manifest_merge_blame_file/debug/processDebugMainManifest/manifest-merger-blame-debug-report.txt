@@ -9,14 +9,14 @@
 9        android:targetSdkVersion="36" />
 10
 11    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-11-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:4:5-71
-11-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:4:22-68
+11-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:4:5-71
+11-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:4:22-68
 12    <uses-permission
-12-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:5-108
+12-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:5-108
 13        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-13-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:22-78
+13-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:22-78
 14        android:maxSdkVersion="28" />
-14-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:79-105
+14-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:79-105
 15
 16    <permission
 16-->[androidx.core:core:1.13.1] C:\Users\moonw\.gradle\caches\8.13\transforms\5503f5d46aa818df81ceb80fa846a793\transformed\core-1.13.1\AndroidManifest.xml:22:5-24:47
@@ -30,47 +30,47 @@
 20-->[androidx.core:core:1.13.1] C:\Users\moonw\.gradle\caches\8.13\transforms\5503f5d46aa818df81ceb80fa846a793\transformed\core-1.13.1\AndroidManifest.xml:26:22-94
 21
 22    <application
-22-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:7:5-27:19
+22-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:7:5-27:19
 23        android:allowBackup="true"
-23-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:8:9-35
+23-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:8:9-35
 24        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
 24-->[androidx.core:core:1.13.1] C:\Users\moonw\.gradle\caches\8.13\transforms\5503f5d46aa818df81ceb80fa846a793\transformed\core-1.13.1\AndroidManifest.xml:28:18-86
 25        android:dataExtractionRules="@xml/data_extraction_rules"
-25-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:9:9-65
+25-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:9:9-65
 26        android:debuggable="true"
 27        android:extractNativeLibs="false"
 28        android:fullBackupContent="@xml/backup_rules"
-28-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:10:9-54
+28-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:10:9-54
 29        android:icon="@mipmap/ic_launcher"
-29-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:11:9-43
+29-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:11:9-43
 30        android:label="@string/app_name"
-30-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:12:9-41
+30-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:12:9-41
 31        android:roundIcon="@mipmap/ic_launcher_round"
-31-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:13:9-54
+31-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:13:9-54
 32        android:supportsRtl="true"
-32-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:14:9-35
+32-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:14:9-35
 33        android:testOnly="true"
 34        android:theme="@style/Theme.MyApplication" >
-34-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:15:9-51
+34-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:15:9-51
 35        <activity
-35-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:16:9-26:20
+35-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:16:9-26:20
 36            android:name="com.example.myapplication.MainActivity"
-36-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:17:13-41
+36-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:17:13-41
 37            android:exported="true"
-37-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:18:13-36
+37-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:18:13-36
 38            android:label="@string/app_name"
-38-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:19:13-45
+38-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:19:13-45
 39            android:theme="@style/Theme.MyApplication" >
-39-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:20:13-55
+39-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:20:13-55
 40            <intent-filter>
-40-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:21:13-25:29
+40-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:21:13-25:29
 41                <action android:name="android.intent.action.MAIN" />
-41-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:22:17-69
-41-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:22:25-66
+41-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:22:17-69
+41-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:22:25-66
 42
 43                <category android:name="android.intent.category.LAUNCHER" />
-43-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:24:17-77
-43-->C:\Users\moonw\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:24:27-74
+43-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:24:17-77
+43-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:24:27-74
 44            </intent-filter>
 45        </activity>
 46        <activity

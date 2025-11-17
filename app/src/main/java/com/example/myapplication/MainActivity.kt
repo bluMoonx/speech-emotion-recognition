@@ -51,6 +51,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+
 
 private const val TAG = "ULTRA_DEBUG"
 
@@ -65,9 +71,6 @@ sealed interface AppState {
     data class Failure(val message: String) : AppState
     data class PostRecordingReview(val fileName: String, val fileUri: Uri) : AppState
 }
-
-data class EmotionVector(val arousal: Float, val valence: Float, val dominance: Float)
-data class MappedEmotion(val label: String, val description: String)
 
 
 // ===================================
@@ -156,7 +159,8 @@ class MainActivity : ComponentActivity() {
                         // Convert the Uri to a string path that the player can use
                         audioPlayer.play(uri)
                     },
-                    onReRecord = { appState = AppState.Recording }
+                    onReRecord = { appState = AppState.Recording },
+                    onGoHome = { appState = AppState.Idle}
                 )
             }
         }
@@ -229,8 +233,9 @@ fun preprocessAudioForModel(audioData: ShortArray): FloatArray? {
 }
 
 
-// --- UI COMPOSABLES ---
+// In MainActivity.kt, find and replace the MainScreen composable...
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     appState: AppState,
@@ -241,20 +246,46 @@ fun MainScreen(
     onStopRecording: () -> Unit,
     onDetectClick: (String, Uri) -> Unit,
     onPlayRecording: (Uri) -> Unit,
-    onReRecord: () -> Unit
+    onReRecord: () -> Unit,
+    onGoHome: () -> Unit
 ) {
-    AnimatedContent(targetState = appState, label = "ScreenState") { state ->
-        when (state) {
-            is AppState.Recording -> RecordingScreen(amplitude, onStopRecording, onStartRecording)
-            is AppState.PostRecordingReview -> PostRecordingScreen(state, onDetectClick, { onPlayRecording(state.fileUri) }, onReRecord)
-            else -> FileSelectionScreen(
-                appState = state,
-                onOpenFileClick = onOpenFileClick,
-                onRecordAudioClick = onRecordAudioClick,
-                onDetectClick = onDetectClick,
-                onPlayRecording = onPlayRecording // <-- ADD THIS
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Emotion Detection App") },
+                navigationIcon = {
+                    // Show the home icon on every screen EXCEPT the initial Idle screen.
+                    if (appState !is AppState.Idle) {
+                        IconButton(onClick = onGoHome) {
+                            Icon(
+                                imageVector = Icons.Default.Home,
+                                contentDescription = "Go to Home Screen"
+                            )
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary
+                )
             )
-
+        }
+    ) { innerPadding ->
+        // The AnimatedContent from before is now placed inside the Scaffold's content area.
+        Box(modifier = Modifier.padding(innerPadding)) {
+            AnimatedContent(targetState = appState, label = "ScreenState") { state ->
+                when (state) {
+                    is AppState.Recording -> RecordingScreen(amplitude, onStopRecording, onStartRecording)
+                    is AppState.PostRecordingReview -> PostRecordingScreen(state, onDetectClick, { onPlayRecording(state.fileUri) }, onReRecord)
+                    else -> FileSelectionScreen(
+                        appState = state,
+                        onOpenFileClick = onOpenFileClick,
+                        onRecordAudioClick = onRecordAudioClick,
+                        onDetectClick = onDetectClick,
+                        onPlayRecording = onPlayRecording
+                    )
+                }
+            }
         }
     }
 }
@@ -380,20 +411,25 @@ fun FileSelectionScreen(
 
 
 
+// In MainActivity.kt, inside the RecordingScreen composable...
+
 @Composable
 fun RecordingScreen(amplitude: Float, onStopRecording: () -> Unit, onStartRecording: () -> Unit) {
-    // This list will store the history of amplitudes for the scrolling effect
     val amplitudes = remember { mutableStateListOf<Float>() }
+    val sensitivity = 4.0f // <-- You can adjust this factor. 2.0f, 3.0f, or 4.0f work well.
 
-    // This effect will run whenever the 'amplitude' value changes.
-    // By using 'amplitude' as a key, we ensure the block always reads the LATEST value.
     LaunchedEffect(amplitude) {
-        amplitudes.add(amplitude) // Add the latest, correct amplitude
-        // Keep the list at a manageable size (e.g., the last 100 values)
+        // Multiply the raw amplitude by the sensitivity factor before adding it.
+        // `coerceIn` ensures the value doesn't go above 1.0f, which would break the visual.
+        val boostedAmplitude = (amplitude * sensitivity).coerceIn(0f, 1f)
+
+        amplitudes.add(boostedAmplitude)
+
         if (amplitudes.size > 100) {
             amplitudes.removeAt(0)
         }
     }
+
 
     // This effect runs only ONCE to start the recording.
     LaunchedEffect(Unit) {
@@ -445,7 +481,9 @@ fun EmotionResult(vector: EmotionVector) {
             text = mappedEmotion.label,
             fontSize = 48.sp,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+            lineHeight = 52.sp
         )
 
         // The description of the emotion
