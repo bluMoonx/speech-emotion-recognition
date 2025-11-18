@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">Потрібна автентифікація</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"Відповісти"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"Відео"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"Відхилити"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"Закрити меню навігації"</string>
     <string msgid="7573152094250666567" name="close_sheet">"Закрити аркуш"</string>
     <string msgid="8038256446254964252" name="default_error_message">"Введено недійсні дані"</string>
+    <string name="default_notification_channel_name">Зараз відтворюється</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"Спливаюче вікно"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"Спадне меню"</string>
+    <string name="exo_download_completed">Завантаження завершено</string>
+    <string name="exo_download_description">Завантажити</string>
+    <string name="exo_download_downloading">Завантажується</string>
+    <string name="exo_download_failed">Не вдалося завантажити</string>
+    <string name="exo_download_notification_channel_name">Завантаження</string>
+    <string name="exo_download_paused">Завантаження призупинено</string>
+    <string name="exo_download_paused_for_network">Очікується підключення до мережі</string>
+    <string name="exo_download_paused_for_wifi">Очікується підключення до Wi-Fi</string>
+    <string name="exo_download_removing">Завантаження видаляються</string>
     <string msgid="6827826412747255547" name="in_progress">"Виконується"</string>
     <string msgid="7933458017204019916" name="indeterminate">"Частково вибрано"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"Згорнути нижній екран"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"ПП"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"Показати спливаючу підказку"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"Спливаюча підказка"</string>
+    <string name="media3_controls_pause_description">Призупинити</string>
+    <string name="media3_controls_play_description">Відтворити</string>
+    <string name="media3_controls_seek_back_description">Перемотати назад</string>
+    <string name="media3_controls_seek_forward_description">Перемотати вперед</string>
+    <string name="media3_controls_seek_to_next_description">Перейти до наступного об’єкта</string>
+    <string name="media3_controls_seek_to_previous_description">Перейти до попереднього об’єкта</string>
     <string msgid="542007171693138492" name="navigation_menu">"Меню навігації"</string>
     <string msgid="6610465462668679431" name="not_selected">"Не вибрано"</string>
     <string msgid="875452955155264703" name="off">"Вимкнено"</string>

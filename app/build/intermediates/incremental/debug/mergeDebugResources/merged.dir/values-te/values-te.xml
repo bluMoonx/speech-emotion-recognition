@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">ప్రామాణీకరణ అవసరం</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"పికప్ చేయండి"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"వీడియో కాల్"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"కట్ చేయండి"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"నావిగేషన్ మెనూను మూసివేయి"</string>
     <string msgid="7573152094250666567" name="close_sheet">"షీట్‌ను మూసివేయి"</string>
     <string msgid="8038256446254964252" name="default_error_message">"ఇన్‌పుట్ చెల్లదు"</string>
+    <string name="default_notification_channel_name">ప్రస్తుతం ప్లే అవుతున్నది</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"పాప్-అప్ విండో"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"డ్రాప్‌డౌన్ మెనూ"</string>
+    <string name="exo_download_completed">డౌన్‌లోడ్ పూర్తయింది</string>
+    <string name="exo_download_description">డౌన్‌లోడ్ చేయి</string>
+    <string name="exo_download_downloading">డౌన్‌లోడ్ చేస్తోంది</string>
+    <string name="exo_download_failed">డౌన్‌లోడ్ విఫలమైంది</string>
+    <string name="exo_download_notification_channel_name">డౌన్‌లోడ్‌లు</string>
+    <string name="exo_download_paused">డౌన్‌లోడ్‌లు పాజ్ చేయబడ్డాయి</string>
+    <string name="exo_download_paused_for_network">డౌన్‌లోడ్స్ నెట్‌వర్క్ కోసం చూస్తున్నాయి</string>
+    <string name="exo_download_paused_for_wifi">డౌన్‌లోడ్‌లు WiFi కోసం చూస్తున్నాయి</string>
+    <string name="exo_download_removing">డౌన్‌లోడ్‌లను తీసివేస్తోంది</string>
     <string msgid="6827826412747255547" name="in_progress">"ప్రోగ్రెస్‌లో ఉంది"</string>
     <string msgid="7933458017204019916" name="indeterminate">"పాక్షికంగా ఎంచుకోబడింది"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"దిగువున ఉన్న షీట్‌ను కుదిస్తుంది"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"PM"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"టూల్‌టిప్‌ను చూడండి"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"టూల్‌టిప్"</string>
+    <string name="media3_controls_pause_description">పాజ్ చేయండి</string>
+    <string name="media3_controls_play_description">ప్లే చేయండి</string>
+    <string name="media3_controls_seek_back_description">వెనుకకు దాటవేయండి</string>
+    <string name="media3_controls_seek_forward_description">ముందుకు ఫార్వర్డ్ చేయండి</string>
+    <string name="media3_controls_seek_to_next_description">తర్వాతి ఐటెమ్‌కు దాటవేయండి</string>
+    <string name="media3_controls_seek_to_previous_description">మునుపటి ఐటెమ్‌కు దాటవేయండి</string>
     <string msgid="542007171693138492" name="navigation_menu">"నావిగేషన్ మెనూ"</string>
     <string msgid="6610465462668679431" name="not_selected">"ఎంచుకోబడలేదు"</string>
     <string msgid="875452955155264703" name="off">"ఆఫ్‌లో ఉంది"</string>

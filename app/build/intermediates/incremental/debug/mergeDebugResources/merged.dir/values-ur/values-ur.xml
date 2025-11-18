@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">توثیق مطلوب ہے</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"جواب دیں"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"ویڈیو"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"مسترد کریں"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"نیویگیشن مینیو بند کریں"</string>
     <string msgid="7573152094250666567" name="close_sheet">"شیٹ بند کریں"</string>
     <string msgid="8038256446254964252" name="default_error_message">"غلط ان پٹ"</string>
+    <string name="default_notification_channel_name">ابھی چل رہا ہے</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"پاپ اپ ونڈو"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"ڈراپ ڈاؤن مینیو"</string>
+    <string name="exo_download_completed">ڈاؤن لوڈ مکمل ہو گیا</string>
+    <string name="exo_download_description">ڈاؤن لوڈ کریں</string>
+    <string name="exo_download_downloading">ڈاؤن لوڈ ہو رہا ہے</string>
+    <string name="exo_download_failed">ڈاؤن لوڈ ناکام ہو گیا</string>
+    <string name="exo_download_notification_channel_name">ڈاؤن لوڈز</string>
+    <string name="exo_download_paused">ڈاؤن لوڈز موقوف ہو گئے</string>
+    <string name="exo_download_paused_for_network">ڈاؤن لوڈز نیٹ ورک کے منتظر ہیں</string>
+    <string name="exo_download_paused_for_wifi">ڈاؤن لوڈز WiFi کے منتظر ہیں</string>
+    <string name="exo_download_removing">ڈاؤن لوڈز کو ہٹایا جا رہا ہے</string>
     <string msgid="6827826412747255547" name="in_progress">"پیشرفت میں"</string>
     <string msgid="7933458017204019916" name="indeterminate">"جزوی طور پر چیک کردہ"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"نیچے کی شیٹ کو سکیڑیں"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"PM"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"ٹول ٹپ دکھائیں"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"ٹول ٹپ"</string>
+    <string name="media3_controls_pause_description">روکیں</string>
+    <string name="media3_controls_play_description">چلائیں</string>
+    <string name="media3_controls_seek_back_description">واپس جائیں</string>
+    <string name="media3_controls_seek_forward_description">آگے جائیں</string>
+    <string name="media3_controls_seek_to_next_description">اگلے آئٹم پر جائیں</string>
+    <string name="media3_controls_seek_to_previous_description">پچھلے آئٹم پر جائیں</string>
     <string msgid="542007171693138492" name="navigation_menu">"نیویگیشن مینیو"</string>
     <string msgid="6610465462668679431" name="not_selected">"غیر منتخب کردہ"</string>
     <string msgid="875452955155264703" name="off">"آف ہے"</string>

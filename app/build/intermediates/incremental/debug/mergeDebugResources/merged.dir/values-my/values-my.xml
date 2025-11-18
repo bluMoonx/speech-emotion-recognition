@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">အထောက်အထားစိစစ်ခြင်း လိုအပ်သည်</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"ဖုန်းကိုင်ရန်"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"ဗီဒီယို"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"ငြင်းပယ်ရန်"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"လမ်းညွှန် မီနူး ပိတ်ရန်"</string>
     <string msgid="7573152094250666567" name="close_sheet">"စာမျက်နှာ ပိတ်ရန်"</string>
     <string msgid="8038256446254964252" name="default_error_message">"ထည့်သွင်းမှု မမှန်ကန်ပါ"</string>
+    <string name="default_notification_channel_name">ယခု ဖွင့်နေသည်</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"ပေါ့ပ်အပ် ဝင်းဒိုး"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"ဆွဲချမီနူး"</string>
+    <string name="exo_download_completed">ဒေါင်းလုဒ်လုပ်ပြီးပါပြီ</string>
+    <string name="exo_download_description">ဒေါင်းလုဒ် လုပ်ရန်</string>
+    <string name="exo_download_downloading">ဒေါင်းလုဒ်လုပ်နေသည်</string>
+    <string name="exo_download_failed">ဒေါင်းလုဒ်လုပ်၍ မရပါ</string>
+    <string name="exo_download_notification_channel_name">ဒေါင်းလုဒ်များ</string>
+    <string name="exo_download_paused">ဒေါင်းလုဒ်များ ခဏရပ်ထားသည်</string>
+    <string name="exo_download_paused_for_network">ဒေါင်းလုဒ်များက အင်တာနက်ရရန် စောင့်နေသည်</string>
+    <string name="exo_download_paused_for_wifi">ဒေါင်းလုဒ်များက WiFi ရရန် စောင့်နေသည်</string>
+    <string name="exo_download_removing">ဒေါင်းလုဒ်များ ဖယ်ရှားနေသည်</string>
     <string msgid="6827826412747255547" name="in_progress">"ဆောင်ရွက်နေဆဲ"</string>
     <string msgid="7933458017204019916" name="indeterminate">"တစ်ဝက်တစ်ပျက် စစ်ဆေးထားသည်"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"အောက်ခြေအပိုဆောင်း စာမျက်နှာကို ချုံ့သည်"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"PM"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"အကြံပြုချက်ပြ ပေါ့အပ်ဝင်းဒိုး ပြရန်"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"အကြံပြုချက်ပြ ပေါ့အပ် ဝင်းဒိုး"</string>
+    <string name="media3_controls_pause_description">ခဏရပ်ရန်</string>
+    <string name="media3_controls_play_description">ဖွင့်ရန်</string>
+    <string name="media3_controls_seek_back_description">နောက်သို့ ရစ်ရန်</string>
+    <string name="media3_controls_seek_forward_description">ရှေ့သို့ ရစ်ရန်</string>
+    <string name="media3_controls_seek_to_next_description">ရှေ့တစ်ခုသို့ ရစ်ရန်</string>
+    <string name="media3_controls_seek_to_previous_description">ယခင်တစ်ခုသို့ ရစ်ရန်</string>
     <string msgid="542007171693138492" name="navigation_menu">"လမ်းညွှန် မီနူး"</string>
     <string msgid="6610465462668679431" name="not_selected">"ရွေးမထားပါ"</string>
     <string msgid="875452955155264703" name="off">"ပိတ်"</string>

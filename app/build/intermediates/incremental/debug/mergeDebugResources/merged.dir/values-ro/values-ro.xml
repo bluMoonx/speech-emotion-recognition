@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">Autentificarea este obligatorie</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"Răspunde"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"Video"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"Respinge"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"Închide meniul de navigare"</string>
     <string msgid="7573152094250666567" name="close_sheet">"Închide foaia"</string>
     <string msgid="8038256446254964252" name="default_error_message">"Intrare nevalidă"</string>
+    <string name="default_notification_channel_name">Se redă acum</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"Fereastră pop-up"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"Meniu drop-down"</string>
+    <string name="exo_download_completed">Descărcarea a fost finalizată</string>
+    <string name="exo_download_description">Descarcă</string>
+    <string name="exo_download_downloading">Se descarcă</string>
+    <string name="exo_download_failed">Descărcarea nu a reușit</string>
+    <string name="exo_download_notification_channel_name">Descărcări</string>
+    <string name="exo_download_paused">Descărcările au fost întrerupte</string>
+    <string name="exo_download_paused_for_network">Descărcările așteaptă rețeaua</string>
+    <string name="exo_download_paused_for_wifi">Descărcările așteaptă rețeaua Wi-Fi</string>
+    <string name="exo_download_removing">Se elimină descărcările</string>
     <string msgid="6827826412747255547" name="in_progress">"În curs"</string>
     <string msgid="7933458017204019916" name="indeterminate">"Bifată parțial"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"Restrânge foaia din partea de jos"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"p.m."</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"Afișează balonul explicativ"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"Balon explicativ"</string>
+    <string name="media3_controls_pause_description">Întrerupe</string>
+    <string name="media3_controls_play_description">Redă</string>
+    <string name="media3_controls_seek_back_description">Derulează înapoi</string>
+    <string name="media3_controls_seek_forward_description">Derulează înainte</string>
+    <string name="media3_controls_seek_to_next_description">Treci la elementul următor</string>
+    <string name="media3_controls_seek_to_previous_description">Treci la elementul anterior</string>
     <string msgid="542007171693138492" name="navigation_menu">"Meniu de navigare"</string>
     <string msgid="6610465462668679431" name="not_selected">"Neselectat"</string>
     <string msgid="875452955155264703" name="off">"Dezactivat"</string>

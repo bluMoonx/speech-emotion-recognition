@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">Autentisering krävs</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"Svara"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"Video"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"Avvisa"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"Stäng navigeringsmenyn"</string>
     <string msgid="7573152094250666567" name="close_sheet">"Stäng kalkylarket"</string>
     <string msgid="8038256446254964252" name="default_error_message">"Ogiltiga indata"</string>
+    <string name="default_notification_channel_name">Nu spelas</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"Popup-fönster"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"Rullgardinsmeny"</string>
+    <string name="exo_download_completed">Nedladdningen är klar</string>
+    <string name="exo_download_description">Ladda ned</string>
+    <string name="exo_download_downloading">Laddar ned</string>
+    <string name="exo_download_failed">Nedladdningen misslyckades</string>
+    <string name="exo_download_notification_channel_name">Nedladdningar</string>
+    <string name="exo_download_paused">Nedladdningar har pausats</string>
+    <string name="exo_download_paused_for_network">Nedladdningar väntar på nätverket</string>
+    <string name="exo_download_paused_for_wifi">Nedladdningar väntar på wifi</string>
+    <string name="exo_download_removing">Nedladdningar tas bort</string>
     <string msgid="6827826412747255547" name="in_progress">"Pågår"</string>
     <string msgid="7933458017204019916" name="indeterminate">"Delvis markerad"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"Komprimera arket på nedre delen av skärmen"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"EM"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"Visa beskrivning"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"Beskrivning"</string>
+    <string name="media3_controls_pause_description">Pausa</string>
+    <string name="media3_controls_play_description">Spela upp</string>
+    <string name="media3_controls_seek_back_description">Hoppa bakåt</string>
+    <string name="media3_controls_seek_forward_description">Hoppa framåt</string>
+    <string name="media3_controls_seek_to_next_description">Hoppa till nästa objekt</string>
+    <string name="media3_controls_seek_to_previous_description">Hoppa till föregående objekt</string>
     <string msgid="542007171693138492" name="navigation_menu">"Navigeringsmeny"</string>
     <string msgid="6610465462668679431" name="not_selected">"Inte vald"</string>
     <string msgid="875452955155264703" name="off">"Av"</string>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">Authentification requise</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"Répondre"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"Vidéo"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"Refuser"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"Fermer le menu de navigation"</string>
     <string msgid="7573152094250666567" name="close_sheet">"Fermer la feuille"</string>
     <string msgid="8038256446254964252" name="default_error_message">"Données incorrectes"</string>
+    <string name="default_notification_channel_name">En cours de lecture</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"Fenêtre pop-up"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"Menu déroulant"</string>
+    <string name="exo_download_completed">Téléchargement terminé</string>
+    <string name="exo_download_description">Télécharger</string>
+    <string name="exo_download_downloading">Téléchargement…</string>
+    <string name="exo_download_failed">Échec du téléchargement</string>
+    <string name="exo_download_notification_channel_name">Téléchargements</string>
+    <string name="exo_download_paused">Téléchargements mis en pause</string>
+    <string name="exo_download_paused_for_network">Téléchargements en attente de réseau</string>
+    <string name="exo_download_paused_for_wifi">Téléchargements en attente de Wi-Fi</string>
+    <string name="exo_download_removing">Suppression des téléchargements…</string>
     <string msgid="6827826412747255547" name="in_progress">"En cours"</string>
     <string msgid="7933458017204019916" name="indeterminate">"Partiellement coché"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"Réduire la bottom sheet"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"PM"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"Afficher l\'info-bulle"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"Info-bulle"</string>
+    <string name="media3_controls_pause_description">Pause</string>
+    <string name="media3_controls_play_description">Lecture</string>
+    <string name="media3_controls_seek_back_description">Revenir en arrière</string>
+    <string name="media3_controls_seek_forward_description">Avancer</string>
+    <string name="media3_controls_seek_to_next_description">Accéder à l\'élément suivant</string>
+    <string name="media3_controls_seek_to_previous_description">Accéder à l\'élément précédent</string>
     <string msgid="542007171693138492" name="navigation_menu">"Menu de navigation"</string>
     <string msgid="6610465462668679431" name="not_selected">"Non sélectionné"</string>
     <string msgid="875452955155264703" name="off">"Désactivé"</string>

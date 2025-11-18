@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">ऑथेंटिकेशन आवश्यक आहे</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"उत्तर द्या"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"व्हिडिओ"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"नकार द्या"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"नेव्हिगेशन मेनू बंद करा"</string>
     <string msgid="7573152094250666567" name="close_sheet">"शीट बंद करा"</string>
     <string msgid="8038256446254964252" name="default_error_message">"इनपुट चुकीचे आहे"</string>
+    <string name="default_notification_channel_name">आता प्ले करत आहे</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"पॉप-अप विंडो"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"ड्रॉपडाउन मेनू"</string>
+    <string name="exo_download_completed">डाउनलोड पूर्ण झाले</string>
+    <string name="exo_download_description">डाउनलोड करा</string>
+    <string name="exo_download_downloading">डाउनलोड होत आहे</string>
+    <string name="exo_download_failed">डाउनलोड अयशस्वी झाले</string>
+    <string name="exo_download_notification_channel_name">डाउनलोड</string>
+    <string name="exo_download_paused">डाउनलोड थांबवले</string>
+    <string name="exo_download_paused_for_network">डाउनलोड नेटवर्कची प्रतीक्षा करत आहेत</string>
+    <string name="exo_download_paused_for_wifi">डाउनलोड वायफाय ची प्रतीक्षा करत आहेत</string>
+    <string name="exo_download_removing">डाउनलोड काढून टाकत आहे</string>
     <string msgid="6827826412747255547" name="in_progress">"प्रगतीपथावर आहे"</string>
     <string msgid="7933458017204019916" name="indeterminate">"अंशतः तपासले"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"तळाशी असलेली शीट कोलॅप्स करा"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"PM"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"टूलटिप दाखवा"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"टूलटिप"</string>
+    <string name="media3_controls_pause_description">थांबवा</string>
+    <string name="media3_controls_play_description">प्ले करा</string>
+    <string name="media3_controls_seek_back_description">मागे जा</string>
+    <string name="media3_controls_seek_forward_description">पुढे जा</string>
+    <string name="media3_controls_seek_to_next_description">पुढील आयटमवर जा</string>
+    <string name="media3_controls_seek_to_previous_description">मागील आयटम वर जा</string>
     <string msgid="542007171693138492" name="navigation_menu">"नेव्हिगेशन मेनू"</string>
     <string msgid="6610465462668679431" name="not_selected">"निवडला नाही"</string>
     <string msgid="875452955155264703" name="off">"बंद आहे"</string>

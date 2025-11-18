@@ -7,11 +7,11 @@ import java.nio.ByteOrder
 import kotlin.math.roundToInt
 
 
-private val Triple<Int, Int, Int>.numChannels: Int
+internal val Triple<Int, Int, Int>.numChannels: Int
     get() = this.second
-private val Triple<Int, Int, Int>.bitsPerSample: Int
+internal val Triple<Int, Int, Int>.bitsPerSample: Int
     get() = this.third
-private val Triple<Int, Int, Int>.sampleRate: Int
+internal val Triple<Int, Int, Int>.sampleRate: Int
     get() = this.first
 const val TARGET_SAMPLE_RATE = 16000
 

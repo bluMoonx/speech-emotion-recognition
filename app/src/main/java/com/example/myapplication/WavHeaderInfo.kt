@@ -8,5 +8,6 @@ package com.example.myapplication
 data class WavHeaderInfo(
     val sampleRate: Int,
     val numChannels: Int,
-    val bitsPerSample: Int
+    val bitsPerSample: Int,
+    val audioFormat: Int
 )

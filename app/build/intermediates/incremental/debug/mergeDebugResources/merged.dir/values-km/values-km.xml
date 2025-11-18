@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">តម្រូវឱ្យ​មាន​ការផ្ទៀងផ្ទាត់</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"ឆ្លើយ"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"វីដេអូ"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"បដិសេធ"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"បិទម៉ឺនុយរុករក"</string>
     <string msgid="7573152094250666567" name="close_sheet">"បិទសន្លឹក"</string>
     <string msgid="8038256446254964252" name="default_error_message">"ការបញ្ចូល​មិនត្រឹមត្រូវ"</string>
+    <string name="default_notification_channel_name">កំពុងចាក់</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"វិនដូ​លោតឡើង"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"ម៉ឺនុយធ្លាក់ចុះ"</string>
+    <string name="exo_download_completed">បាន​បញ្ចប់​ការទាញយក</string>
+    <string name="exo_download_description">ទាញយក</string>
+    <string name="exo_download_downloading">កំពុង​ទាញ​យក</string>
+    <string name="exo_download_failed">មិន​អាច​ទាញយក​បាន​ទេ</string>
+    <string name="exo_download_notification_channel_name">ទាញយក</string>
+    <string name="exo_download_paused">ការទាញយក​ត្រូវបានផ្អាក</string>
+    <string name="exo_download_paused_for_network">ការទាញយក​កំពុងរង់ចាំ​ការតភ្ជាប់បណ្ដាញ</string>
+    <string name="exo_download_paused_for_wifi">ការទាញយក​កំពុងរង់ចាំ​ការតភ្ជាប់ Wi-Fi</string>
+    <string name="exo_download_removing">កំពុង​លុប​ការទាញយក</string>
     <string msgid="6827826412747255547" name="in_progress">"កំពុងដំណើរការ"</string>
     <string msgid="7933458017204019916" name="indeterminate">"បានធីកខ្លះ"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"បង្រួម​សន្លឹកខាងក្រោម"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"PM"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"បង្ហាញ​កំណត់​ពន្យល់"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"កំណត់​ពន្យល់"</string>
+    <string name="media3_controls_pause_description">ផ្អាក</string>
+    <string name="media3_controls_play_description">ចាក់</string>
+    <string name="media3_controls_seek_back_description">ថយក្រោយ</string>
+    <string name="media3_controls_seek_forward_description">រំលង​​ទៅ​មុខ</string>
+    <string name="media3_controls_seek_to_next_description">ទៅកាន់ធាតុបន្ទាប់</string>
+    <string name="media3_controls_seek_to_previous_description">ទៅកាន់ធាតុមុន</string>
     <string msgid="542007171693138492" name="navigation_menu">"ម៉ឺនុយរុករក"</string>
     <string msgid="6610465462668679431" name="not_selected">"មិនបាន​ជ្រើសរើស"</string>
     <string msgid="875452955155264703" name="off">"បិទ"</string>

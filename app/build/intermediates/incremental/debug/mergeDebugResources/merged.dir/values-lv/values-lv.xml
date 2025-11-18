@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">Nepieciešama autentificēšana</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"Atbildēt"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"Video"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"Noraidīt"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"Aizvērt navigācijas izvēlni"</string>
     <string msgid="7573152094250666567" name="close_sheet">"Aizvērt izklājlapu"</string>
     <string msgid="8038256446254964252" name="default_error_message">"Nederīga ievade"</string>
+    <string name="default_notification_channel_name">Tagad atskaņo</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"Uznirstošais logs"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"Nolaižamā izvēlne"</string>
+    <string name="exo_download_completed">Lejupielāde ir pabeigta</string>
+    <string name="exo_download_description">Lejupielādēt</string>
+    <string name="exo_download_downloading">Notiek lejupielāde</string>
+    <string name="exo_download_failed">Lejupielāde neizdevās</string>
+    <string name="exo_download_notification_channel_name">Lejupielādes</string>
+    <string name="exo_download_paused">Lejupielādes ir pārtrauktas.</string>
+    <string name="exo_download_paused_for_network">Lejupielādes gaida savienojumu ar tīklu.</string>
+    <string name="exo_download_paused_for_wifi">Lejupielādes gaida savienojumu ar Wi-Fi.</string>
+    <string name="exo_download_removing">Notiek lejupielāžu noņemšana</string>
     <string msgid="6827826412747255547" name="in_progress">"Notiek apstrāde"</string>
     <string msgid="7933458017204019916" name="indeterminate">"Daļēji atzīmēta"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"Sakļaut ekrāna apakšdaļas lapu"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"PM"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"Rādīt rīka padomu"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"Rīka padoms"</string>
+    <string name="media3_controls_pause_description">Apturēt</string>
+    <string name="media3_controls_play_description">Atskaņot</string>
+    <string name="media3_controls_seek_back_description">Pāriet atpakaļ</string>
+    <string name="media3_controls_seek_forward_description">Pāriet uz priekšu</string>
+    <string name="media3_controls_seek_to_next_description">Pāriet uz nākamo vienumu</string>
+    <string name="media3_controls_seek_to_previous_description">Pāriet uz iepriekšējo vienumu</string>
     <string msgid="542007171693138492" name="navigation_menu">"Navigācijas izvēlne"</string>
     <string msgid="6610465462668679431" name="not_selected">"Nav atlasīts"</string>
     <string msgid="875452955155264703" name="off">"Izslēgts"</string>

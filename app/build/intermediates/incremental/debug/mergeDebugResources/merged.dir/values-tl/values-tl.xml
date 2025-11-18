@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">Kinakailangan ang pag-authenticate</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"Sagutin"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"Video"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"Tanggihan"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"Isara ang menu ng navigation"</string>
     <string msgid="7573152094250666567" name="close_sheet">"Isara ang sheet"</string>
     <string msgid="8038256446254964252" name="default_error_message">"Invalid na input"</string>
+    <string name="default_notification_channel_name">Nagpi-play ngayon</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"Window ng Pop-Up"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"Drop-down na menu"</string>
+    <string name="exo_download_completed">Tapos na ang pag-download</string>
+    <string name="exo_download_description">I-download</string>
+    <string name="exo_download_downloading">Nagda-download</string>
+    <string name="exo_download_failed">Hindi na-download</string>
+    <string name="exo_download_notification_channel_name">Mga Download</string>
+    <string name="exo_download_paused">Na-pause ang mga pag-download</string>
+    <string name="exo_download_paused_for_network">Naghihintay ng network ang pag-download</string>
+    <string name="exo_download_paused_for_wifi">Naghihintay ng WiFi ang mga pag-download</string>
+    <string name="exo_download_removing">Inaalis ang mga na-download</string>
     <string msgid="6827826412747255547" name="in_progress">"Isinasagawa"</string>
     <string msgid="7933458017204019916" name="indeterminate">"Bahagyang may check"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"I-collapse ang bottom sheet"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"PM"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"Ipakita ang tooltip"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"Tooltip"</string>
+    <string name="media3_controls_pause_description">I-pause</string>
+    <string name="media3_controls_play_description">I-play</string>
+    <string name="media3_controls_seek_back_description">Mag-seek pabalik</string>
+    <string name="media3_controls_seek_forward_description">Mag-seek pasulong</string>
+    <string name="media3_controls_seek_to_next_description">Mag-seek sa susunod na item</string>
+    <string name="media3_controls_seek_to_previous_description">Mag-seek sa nakaraang item</string>
     <string msgid="542007171693138492" name="navigation_menu">"Menu ng navigation"</string>
     <string msgid="6610465462668679431" name="not_selected">"Hindi napili"</string>
     <string msgid="875452955155264703" name="off">"Naka-off"</string>

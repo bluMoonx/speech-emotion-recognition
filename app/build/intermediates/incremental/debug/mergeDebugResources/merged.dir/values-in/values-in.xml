@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">Perlu autentikasi</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"Jawab"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"Video"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"Tolak"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"Tutup menu navigasi"</string>
     <string msgid="7573152094250666567" name="close_sheet">"Tutup sheet"</string>
     <string msgid="8038256446254964252" name="default_error_message">"Input tidak valid"</string>
+    <string name="default_notification_channel_name">Sedang diputar</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"Jendela Pop-Up"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"Menu dropdown"</string>
+    <string name="exo_download_completed">Download selesai</string>
+    <string name="exo_download_description">Download</string>
+    <string name="exo_download_downloading">Mendownload</string>
+    <string name="exo_download_failed">Download gagal</string>
+    <string name="exo_download_notification_channel_name">Download</string>
+    <string name="exo_download_paused">Download dijeda</string>
+    <string name="exo_download_paused_for_network">Download menunggu konektivitas jaringan</string>
+    <string name="exo_download_paused_for_wifi">Download menunggu konektivitas Wi-Fi</string>
+    <string name="exo_download_removing">Menghapus download</string>
     <string msgid="6827826412747255547" name="in_progress">"Dalam proses"</string>
     <string msgid="7933458017204019916" name="indeterminate">"Diperiksa sebagian"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"Menciutkan sheet bawah"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"PM"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"Tampilkan tooltip"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"Tooltip"</string>
+    <string name="media3_controls_pause_description">Jeda</string>
+    <string name="media3_controls_play_description">Putar</string>
+    <string name="media3_controls_seek_back_description">Mundur</string>
+    <string name="media3_controls_seek_forward_description">Maju</string>
+    <string name="media3_controls_seek_to_next_description">Cari item berikutnya</string>
+    <string name="media3_controls_seek_to_previous_description">Cari item sebelumnya</string>
     <string msgid="542007171693138492" name="navigation_menu">"Menu navigasi"</string>
     <string msgid="6610465462668679431" name="not_selected">"Tidak dipilih"</string>
     <string msgid="875452955155264703" name="off">"Nonaktif"</string>

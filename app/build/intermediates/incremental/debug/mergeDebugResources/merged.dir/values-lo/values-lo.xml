@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="authentication_required">ຕ້ອງມີການພິສູດຢືນຢັນ</string>
     <string msgid="881409763997275156" name="call_notification_answer_action">"ຮັບສາຍ"</string>
     <string msgid="8793775615905189152" name="call_notification_answer_video_action">"ວິດີໂອ"</string>
     <string msgid="3229508546291798546" name="call_notification_decline_action">"ປະຕິເສດ"</string>
@@ -10,8 +11,18 @@
     <string msgid="406453423630273620" name="close_drawer">"ປິດ​ເມ​ນູການ​ນຳ​ທາງ"</string>
     <string msgid="7573152094250666567" name="close_sheet">"ປິດຊີດ"</string>
     <string msgid="8038256446254964252" name="default_error_message">"ຂໍ້ມູນທີ່ປ້ອນເຂົ້າບໍ່ຖືກຕ້ອງ"</string>
+    <string name="default_notification_channel_name">ກຳລັງຫຼິ້ນຕອນນີ້</string>
     <string msgid="6312721426453364202" name="default_popup_window_title">"ໜ້າຈໍປັອບອັບ"</string>
     <string msgid="1890207353314751437" name="dropdown_menu">"ເມນູແບບເລື່ອນລົງ"</string>
+    <string name="exo_download_completed">ດາວໂຫລດສຳເລັດແລ້ວ</string>
+    <string name="exo_download_description">ດາວໂຫລດ</string>
+    <string name="exo_download_downloading">ກຳລັງດາວໂຫລດ</string>
+    <string name="exo_download_failed">ດາວໂຫຼດບໍ່ສຳເລັດ</string>
+    <string name="exo_download_notification_channel_name">ດາວໂຫລດ</string>
+    <string name="exo_download_paused">ຢຸດດາວໂຫຼດຊົ່ວຄາວແລ້ວ</string>
+    <string name="exo_download_paused_for_network">ການດາວໂຫຼດກຳລັງລໍຖ້າເຄືອຂ່າຍຢູ່</string>
+    <string name="exo_download_paused_for_wifi">ການດາວໂຫຼດກຳລັງລໍຖ້າ WiFi ຢູ່</string>
+    <string name="exo_download_removing">ກຳລັງລຶບການດາວໂຫລດອອກ</string>
     <string msgid="6827826412747255547" name="in_progress">"ກຳ​ລັງ​ດຳ​ເນີນ​ການ"</string>
     <string msgid="7933458017204019916" name="indeterminate">"ກວດສອບບາງສ່ວນແລ້ວ"</string>
     <string msgid="2988463736136100848" name="m3c_bottom_sheet_collapse_description">"ຫຍໍ້ຊີດລຸ່ມສຸດລົງ"</string>
@@ -70,6 +81,12 @@
     <string msgid="6616362054113087709" name="m3c_time_picker_pm">"ຫຼັງທ່ຽງ"</string>
     <string msgid="1805687647081129904" name="m3c_tooltip_long_press_label">"ສະແດງຄຳແນະນຳ"</string>
     <string msgid="5460405025248574620" name="m3c_tooltip_pane_description">"ຄຳແນະນຳ"</string>
+    <string name="media3_controls_pause_description">ຢຸດຊົ່ວຄາວ</string>
+    <string name="media3_controls_play_description">ຫຼິ້ນ</string>
+    <string name="media3_controls_seek_back_description">ເລື່ອນກັບຫຼັງ</string>
+    <string name="media3_controls_seek_forward_description">ເລື່ອນໄປໜ້າ</string>
+    <string name="media3_controls_seek_to_next_description">ເລື່ອນໄປຫາລາຍການຕໍ່ໄປ</string>
+    <string name="media3_controls_seek_to_previous_description">ເລື່ອນໄປຫາລາຍການກ່ອນໜ້າ</string>
     <string msgid="542007171693138492" name="navigation_menu">"ເມນູການນຳທາງ"</string>
     <string msgid="6610465462668679431" name="not_selected">"ບໍ່ໄດ້ເລືອກ"</string>
     <string msgid="875452955155264703" name="off">"ປິດ"</string>

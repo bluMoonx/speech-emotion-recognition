@@ -1,82 +1,98 @@
 package com.example.myapplication
 
-import kotlin.math.pow
+import android.util.Log
+import androidx.compose.ui.graphics.Color
 
-// Data classes defining the input and output for the mapping function.
+// Data classes must match the definitions in MainActivity.kt
 data class EmotionVector(val arousal: Float, val valence: Float, val dominance: Float)
-data class MappedEmotion(val label: String, val description: String)
+data class MappedEmotion(val label: String, val description: String, val color: Color)
 
 /**
- * Maps a 3D emotion vector (Arousal, Valence, Dominance) to a specific MappedEmotion.
+ * Maps a 3D emotion vector to a MappedEmotion using the "Strict Cubby" model.
  *
- * REVISION V62: THE FINAL, PERFECTED MODEL.
- * This version reverts the failed V61 and returns to the superior V60 architecture as requested.
- * It keeps the large, stable V60 Neutral firewall and adds one final, minimal exception
- * to it: a check that allows low-valence, low-dominance Fear to bypass the firewall.
- * This is the most stable and robust version, solving all known issues.
+ * FINAL REVISION 10.2: Closing the Gaps to Reduce 'Unclassified'
+ * This version relaxes the hyper-specific constraints and adds logical fallback cubbies.
+ * This ensures that fewer emotional states fall through the cracks and get marked as
+ * 'Unclassified', providing a more robust classification.
  */
 fun mapVectorToEmotion(vector: EmotionVector): MappedEmotion {
     val (arousal, valence, dominance) = vector
 
-    // --- PRIORITY 1: THE FEAR EXCEPTION & NEUTRAL FIREWALL ---
+    Log.d("EmotionMapper", "INPUT  -> A: $arousal, V: $valence, D: $dominance")
 
-    // A) THE FEAR EXCEPTION: A specific check for clear, negative, powerless states.
-    // If an utterance is clearly negative AND powerless, it CANNOT be Neutral.
-    // This allows Fear/Sadness to bypass the Neutral firewall. THIS IS THE FINAL FIX.
-    val isClearlyNegativeAndPowerless = valence < 0.4f && dominance < 0.45f
+    val emotionLabel = when {
+        // --- PRIORITY 1: THE STRICT NEUTRAL CUBBY (0.40 - 0.60). THIS IS THE ONLY WAY TO BE NEUTRAL. ---
+        valence in 0.4f..0.6f && arousal in 0.4f..0.6f && dominance in 0.4f..0.6f -> "Neutral"
 
-    // B) THE V60 NEUTRAL FIREWALL: The large, stable firewall that works for Neutral.
-    // We now add the exception to it.
-    if (arousal in 0.35f..0.6f && valence in 0.35f..0.65f && dominance in 0.35f..0.65f && !isClearlyNegativeAndPowerless) {
-        return createMappedEmotion("Neutral")
+        // --- PRIMARY EMOTIONAL CUBBIES (Specific and Prioritized) ---
+
+        // Peak Anger
+        valence <= 0.32f && arousal > 0.67f && dominance > 0.67f -> "Anger"
+
+        // Peak Joy
+        valence > 0.6f && arousal > 0.6f && dominance > 0.6f -> "Joy"
+
+        // Sadness is the primary low-energy, low-power state.
+        valence < 0.5f && arousal < 0.5f && dominance < 0.5f -> "Sadness"
+
+        // --- FIX: Fear rule is relaxed to be broader and more effective. ---
+        // It's a high-arousal state that isn't highly controlled.
+        valence < 0.48f && arousal > 0.5f && dominance < 0.6f -> "Fear"
+
+        // Surprise is a sharp, very high-arousal reaction.
+        valence in 0.4f..0.65f && arousal > 0.65f && dominance > 0.55f -> "Surprise"
+
+        // Disgust is a specific mid-arousal, mid-power, negative state.
+        valence < 0.4f && arousal in 0.5f..0.6f && dominance in 0.5f..0.6f -> "Disgust"
+
+
+        // --- LOGICAL FALLBACK CUBBIES TO PREVENT 'UNCLASSIFIED' ---
+
+        // Fallback for general high-energy negative states -> treat as Fear
+        valence < 0.4f && arousal > 0.6f -> "Fear"
+
+        // Fallback for general low-energy negative states -> treat as Disgust
+        valence < 0.4f -> "Disgust"
+
+        // Fallback for general high-energy positive states -> treat as Surprise
+        arousal > 0.65f -> "Surprise"
+
+
+        // --- FINAL CATCH. Only truly ambiguous states end up here. ---
+        else -> "Unclassified"
     }
 
-    // --- PRIORITY 2: THE MOST UNIQUE SIGNATURES ---
-
-    // A) JOY: This rule is stable.
-    if (valence > 0.65f) {
-        return createMappedEmotion("Joy")
-    }
-
-    // B) SURPRISE: This rule is stable.
-    if (arousal > 0.7f && valence in 0.4f..0.7f) {
-        return createMappedEmotion("Surprise")
-    }
-
-    // --- PRIORITY 3: THE "POWERLESS" EMOTIONS (Low Dominance) ---
-    // This is the stable V60 logic.
-    if (dominance < 0.58f) {
-        // SADNESS vs FEAR: Separated by energy.
-        if (arousal < 0.5f) {
-            return createMappedEmotion("Sadness")
-        } else {
-            return createMappedEmotion("Fear")
-        }
-    }
-    // --- PRIORITY 4: THE "POWERFUL" EMOTIONS (High Dominance) ---
-    else { // This now correctly handles dominance >= 0.58f
-        // ANGER vs DISGUST: The simple, robust arousal split.
-        if (arousal > 0.68f) {
-            return createMappedEmotion("Anger")
-        } else {
-            return createMappedEmotion("Disgust")
-        }
-    }
+    val mappedEmotion = createMappedEmotion(emotionLabel)
+    Log.d("EmotionMapper", "MAPPED -> [D:$dominance, A:$arousal, V:$valence] TO -> ${mappedEmotion.label}")
+    return mappedEmotion
 }
 
 /**
- * A helper function to create the MappedEmotion object with its description.
+ * Helper function to create the MappedEmotion object with its description and color.
  */
 private fun createMappedEmotion(label: String): MappedEmotion {
     val description = when (label) {
-        "Joy" -> "A clearly positive and energetic emotional state."
-        "Anger" -> "A powerful and high-energy negative emotion."
-        "Sadness" -> "A powerless and low-energy negative emotion. The 'given-up' state."
-        "Fear" -> "A powerless and high-energy negative emotion, often frantic. The 'subservient' state."
-        "Disgust" -> "A powerful but lower-energy negative emotion. Essentially 'low-energy anger'."
-        "Surprise" -> "A high-energy, mostly positive or neutral event."
-        "Neutral" -> "No single, strong emotion is being expressed."
-        else -> "An unclassified emotional state."
+        "Joy" -> "A positive and controlled emotional state."
+        "Anger" -> "A powerful, aggressive, and high-energy negative state."
+        "Sadness" -> "A state of low energy, low positivity, and low control."
+        "Fear" -> "A negative state defined by a lack of control."
+        "Disgust" -> "A controlled negative reaction to something unpleasant."
+        "Surprise" -> "A sharp, sudden reaction of moderate-to-high energy and control."
+        "Neutral" -> "A balanced emotional state with no single strong emotion."
+        "Unclassified" -> "An ambiguous emotional state that does not fit a clear profile."
+        else -> "An unknown state."
     }
-    return MappedEmotion(label, description)
+
+    val color = when (label) {
+        "Joy" -> Color(0xFFD4AF37)      // Gold
+        "Surprise" -> Color(0xFF40E0D0)  // Turquoise
+        "Anger" -> Color(0xFFB22222)     // Firebrick Red
+        "Disgust" -> Color(0xFF556B2F)   // Dark Olive Green
+        "Sadness" -> Color(0xFF191970)   // Midnight Blue
+        "Fear" -> Color(0xFF4B0082)      // Indigo
+        "Neutral" -> Color.Gray
+        "Unclassified" -> Color.LightGray // A new color for the unclassified state
+        else -> Color.DarkGray
+    }
+    return MappedEmotion(label, description, color)
 }

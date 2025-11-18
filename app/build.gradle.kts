@@ -1,17 +1,17 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "com.example.myapplication"
-    compileSdk = 36
+    compileSdk = 34 // Reverting to a more standard and stable SDK version
 
     defaultConfig {
         applicationId = "com.example.myapplication"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 34 // Aligning target SDK
         versionCode = 1
         versionName = "1.0"
 
@@ -31,53 +31,70 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8 // Reverting to 1.8 is safer for broader compatibility
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
     }
     buildFeatures {
         compose = true
     }
+    // Add the composeOptions block to specify the compiler version if needed
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.11" // This version is compatible with Compose BOM 2024.02.02
+    }
 }
 
-dependencies {        // --- ALIGNED AND STABLE DEPENDENCIES ---
+dependencies {
+    // --- STABLE DEPENDENCY SET ---
 
-    // Use a recent, STABLE Compose BOM. This is the key.
-    implementation(platform("androidx.compose:compose-bom:2024.05.00"))
+    // 1. Use a stable Compose BOM from early 2024. This controls many other versions.
+    val composeBom = platform("androidx.compose:compose-bom:2024.02.02")
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
 
-    // Core Jetpack libraries aligned with that BOM.
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.1")
-    implementation("androidx.activity:activity-compose:1.9.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.1")
+    // 2. Core Jetpack libraries with stable, known-good versions.
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation("androidx.compose.runtime:runtime-livedata")
 
-    // Compose UI libraries (versions are managed by the BOM)
+    // 3. Compose UI libraries (versions are all managed by the BOM)
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
 
-    // --- OTHER DEPENDENCIES ---
-    // Using specific, stable versions
-    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.18.0")
-    implementation("io.grpc:grpc-okhttp:1.62.2")
-    implementation("io.grpc:grpc-protobuf-lite:1.62.2")
-    implementation("io.grpc:grpc-stub:1.62.2")
+    // 4. Other dependencies
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.3")
+    implementation(libs.androidx.navigation.compose)
+
+    // For Media3, using the same stable version WITHOUT the broken exclude blocks.
+    val media3Version = "1.3.1"
+    implementation("androidx.media3:media3-common:$media3Version")
+    implementation("androidx.media3:media3-exoplayer:$media3Version")
+    implementation("androidx.media3:media3-session:$media3Version")
+
+    // THIS IS THE CRITICAL FIX: Explicitly add the Android-compatible Guava.
+    // This forces all other dependencies (like media3) to use this correct version, resolving the conflict.
+    implementation("com.google.guava:guava:33.2.0-android")
+
+    // These don't typically need updates unless there's a specific reason
+    implementation("io.grpc:grpc-okhttp:1.58.0")
+    implementation("io.grpc:grpc-protobuf-lite:1.58.0")
+    implementation("io.grpc:grpc-stub:1.58.0")
     implementation("javax.annotation:javax.annotation-api:1.3.2")
 
 
-
-
-    // Test dependencies
+    // --- TEST DEPENDENCIES ---
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2024.05.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
-
 }
+
