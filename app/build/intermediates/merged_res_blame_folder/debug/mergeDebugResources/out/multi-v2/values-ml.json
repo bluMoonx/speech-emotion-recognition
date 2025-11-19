@@ -1,27 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.myapplication.app-mergeDebugResources-55:/values-ml/values-ml.xml",
+            "outputFile": "com.example.myapplication.app-mergeDebugResources-56:/values-ml/values-ml.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\3c4b5d56ee41c259812271e7dd7d6395\\transformed\\foundation-release\\res\\values-ml\\values-ml.xml",
-                    "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,143",
-                        "endColumns": "87,91",
-                        "endOffsets": "138,230"
-                    },
-                    "to": {
-                        "startLines": "100,101",
-                        "startColumns": "4,4",
-                        "startOffsets": "10215,10303",
-                        "endColumns": "87,91",
-                        "endOffsets": "10298,10390"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\42a3c19dd7949dcb29f7c0964ca30b2a\\transformed\\ui-release\\res\\values-ml\\values-ml.xml",
+                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\befe31e03379a58c8e698d1d0e2d2b04\\transformed\\ui-release\\res\\values-ml\\values-ml.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -35,6 +18,23 @@
                         "startOffsets": "924,1019,1106,1291,1395,2195,2281,9292,9379,9467,9534,9601,9687,9774,9953,10029,10096",
                         "endColumns": "94,86,98,103,89,85,100,86,87,66,66,85,86,77,75,66,118",
                         "endOffsets": "1014,1101,1200,1390,1480,2276,2377,9374,9462,9529,9596,9682,9769,9847,10024,10091,10210"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\e412f02f9951a4fd446d4856fc4b7ddb\\transformed\\foundation-release\\res\\values-ml\\values-ml.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,143",
+                        "endColumns": "87,91",
+                        "endOffsets": "138,230"
+                    },
+                    "to": {
+                        "startLines": "100,101",
+                        "startColumns": "4,4",
+                        "startOffsets": "10215,10303",
+                        "endColumns": "87,91",
+                        "endOffsets": "10298,10390"
                     }
                 },
                 {

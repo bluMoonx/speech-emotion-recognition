@@ -1,25 +1,8 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.myapplication.app-mergeDebugResources-55:/values-pt-rBR/values-pt-rBR.xml",
+            "outputFile": "com.example.myapplication.app-mergeDebugResources-56:/values-pt-rBR/values-pt-rBR.xml",
             "map": [
-                {
-                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\42a3c19dd7949dcb29f7c0964ca30b2a\\transformed\\ui-release\\res\\values-pt-rBR\\values-pt-rBR.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "105,200,286,383,482,568,651,748,839,926,998,1067,1152,1242,1318,1394,1461",
-                        "endColumns": "94,85,96,98,85,82,96,90,86,71,68,84,89,75,75,66,112",
-                        "endOffsets": "195,281,378,477,563,646,743,834,921,993,1062,1147,1237,1313,1389,1456,1569"
-                    },
-                    "to": {
-                        "startLines": "9,10,11,12,13,14,15,72,73,74,75,76,77,78,80,81,82",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "840,935,1021,1118,1217,1303,1386,7623,7714,7801,7873,7942,8027,8117,8294,8370,8437",
-                        "endColumns": "94,85,96,98,85,82,96,90,86,71,68,84,89,75,75,66,112",
-                        "endOffsets": "930,1016,1113,1212,1298,1381,1478,7709,7796,7868,7937,8022,8112,8188,8365,8432,8545"
-                    }
-                },
                 {
                     "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\31c0bed87cd5c955ba72ff4040810514\\transformed\\material3-release\\res\\values-pt-rBR\\values-pt-rBR.xml",
                     "from": {
@@ -38,7 +21,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\3c4b5d56ee41c259812271e7dd7d6395\\transformed\\foundation-release\\res\\values-pt-rBR\\values-pt-rBR.xml",
+                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\e412f02f9951a4fd446d4856fc4b7ddb\\transformed\\foundation-release\\res\\values-pt-rBR\\values-pt-rBR.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",
@@ -69,6 +52,23 @@
                         "startOffsets": "105,202,304,403,503,610,720,8193",
                         "endColumns": "96,101,98,99,106,109,119,100",
                         "endOffsets": "197,299,398,498,605,715,835,8289"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\befe31e03379a58c8e698d1d0e2d2b04\\transformed\\ui-release\\res\\values-pt-rBR\\values-pt-rBR.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "105,200,286,383,482,568,651,748,839,926,998,1067,1152,1242,1318,1394,1461",
+                        "endColumns": "94,85,96,98,85,82,96,90,86,71,68,84,89,75,75,66,112",
+                        "endOffsets": "195,281,378,477,563,646,743,834,921,993,1062,1147,1237,1313,1389,1456,1569"
+                    },
+                    "to": {
+                        "startLines": "9,10,11,12,13,14,15,72,73,74,75,76,77,78,80,81,82",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "840,935,1021,1118,1217,1303,1386,7623,7714,7801,7873,7942,8027,8117,8294,8370,8437",
+                        "endColumns": "94,85,96,98,85,82,96,90,86,71,68,84,89,75,75,66,112",
+                        "endOffsets": "930,1016,1113,1212,1298,1381,1478,7709,7796,7868,7937,8022,8112,8188,8365,8432,8545"
                     }
                 }
             ]

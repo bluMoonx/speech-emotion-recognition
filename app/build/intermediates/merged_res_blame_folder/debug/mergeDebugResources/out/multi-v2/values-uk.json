@@ -1,25 +1,8 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.myapplication.app-mergeDebugResources-55:/values-uk/values-uk.xml",
+            "outputFile": "com.example.myapplication.app-mergeDebugResources-56:/values-uk/values-uk.xml",
             "map": [
-                {
-                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\42a3c19dd7949dcb29f7c0964ca30b2a\\transformed\\ui-release\\res\\values-uk\\values-uk.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "105,198,282,384,485,569,651,740,828,910,980,1051,1136,1224,1296,1376,1446",
-                        "endColumns": "92,83,101,100,83,81,88,87,81,69,70,84,87,71,79,69,122",
-                        "endOffsets": "193,277,379,480,564,646,735,823,905,975,1046,1131,1219,1291,1371,1441,1564"
-                    },
-                    "to": {
-                        "startLines": "10,11,12,14,15,25,26,89,90,91,92,93,94,95,97,98,99",
-                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
-                        "startOffsets": "908,1001,1085,1269,1370,2142,2224,9014,9102,9184,9254,9325,9410,9498,9671,9751,9821",
-                        "endColumns": "92,83,101,100,83,81,88,87,81,69,70,84,87,71,79,69,122",
-                        "endOffsets": "996,1080,1182,1365,1449,2219,2308,9097,9179,9249,9320,9405,9493,9565,9746,9816,9939"
-                    }
-                },
                 {
                     "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\a38d3c41066dd209fea41f5a6a534ad3\\transformed\\media3-exoplayer-1.3.1\\res\\values-uk\\values-uk.xml",
                     "from": {
@@ -72,7 +55,24 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\3c4b5d56ee41c259812271e7dd7d6395\\transformed\\foundation-release\\res\\values-uk\\values-uk.xml",
+                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\55097f130fc3784744cd64e6c9b4f6e4\\transformed\\core-1.12.0\\res\\values-uk\\values-uk.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,155,257,358,459,564,669,782",
+                        "endColumns": "99,101,100,100,104,104,112,100",
+                        "endOffsets": "150,252,353,454,559,664,777,878"
+                    },
+                    "to": {
+                        "startLines": "3,4,5,6,7,8,9,96",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "181,281,383,484,585,690,795,9570",
+                        "endColumns": "99,101,100,100,104,104,112,100",
+                        "endOffsets": "276,378,479,580,685,790,903,9666"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\e412f02f9951a4fd446d4856fc4b7ddb\\transformed\\foundation-release\\res\\values-uk\\values-uk.xml",
                     "from": {
                         "startLines": "2,3",
                         "startColumns": "4,4",
@@ -89,20 +89,20 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\55097f130fc3784744cd64e6c9b4f6e4\\transformed\\core-1.12.0\\res\\values-uk\\values-uk.xml",
+                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\befe31e03379a58c8e698d1d0e2d2b04\\transformed\\ui-release\\res\\values-uk\\values-uk.xml",
                     "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,155,257,358,459,564,669,782",
-                        "endColumns": "99,101,100,100,104,104,112,100",
-                        "endOffsets": "150,252,353,454,559,664,777,878"
+                        "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "105,198,282,384,485,569,651,740,828,910,980,1051,1136,1224,1296,1376,1446",
+                        "endColumns": "92,83,101,100,83,81,88,87,81,69,70,84,87,71,79,69,122",
+                        "endOffsets": "193,277,379,480,564,646,735,823,905,975,1046,1131,1219,1291,1371,1441,1564"
                     },
                     "to": {
-                        "startLines": "3,4,5,6,7,8,9,96",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "181,281,383,484,585,690,795,9570",
-                        "endColumns": "99,101,100,100,104,104,112,100",
-                        "endOffsets": "276,378,479,580,685,790,903,9666"
+                        "startLines": "10,11,12,14,15,25,26,89,90,91,92,93,94,95,97,98,99",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "908,1001,1085,1269,1370,2142,2224,9014,9102,9184,9254,9325,9410,9498,9671,9751,9821",
+                        "endColumns": "92,83,101,100,83,81,88,87,81,69,70,84,87,71,79,69,122",
+                        "endOffsets": "996,1080,1182,1365,1449,2219,2308,9097,9179,9249,9320,9405,9493,9565,9746,9816,9939"
                     }
                 }
             ]

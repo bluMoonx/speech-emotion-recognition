@@ -1,19 +1,26 @@
 package com.example.myapplication
 
+// --- ALL NECESSARY IMPORTS ---
 import android.annotation.SuppressLint
-import android.provider.OpenableColumns
-import kotlin.collections.isNullOrEmpty
-import com.example.myapplication.WavHeaderInfo
 import android.app.Activity
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,16 +31,23 @@ import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.googlefonts.Font
+import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.myapplication.ui.theme.MyApplicationTheme
@@ -44,9 +58,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
+import java.util.*
+import kotlin.math.sqrt
+import kotlin.random.Random
 
 private const val TAG = "ULTRA_DEBUG"
 
@@ -72,26 +86,34 @@ class MainActivity : ComponentActivity() {
     private val liveRecorder by lazy {
         WavAudioChunkRecorder(
             this,
-            CoroutineScope(Dispatchers.Default)
         )
     }
 
-    private var liveDetectionJob: Job? = null
     private val _liveEmotion = MutableLiveData<MappedEmotion?>(null)
     val liveEmotion: LiveData<MappedEmotion?> = _liveEmotion
     private val sessionEmotions = mutableListOf<MappedEmotion>()
-
+    private val emotionHistory = java.util.Collections.synchronizedList(mutableListOf<String>())
+    private var lastDisplayedEmotion: String? = null
+    private var liveAudioBuffer = ShortArray(0)
+    private var isLiveCalibrating by mutableStateOf(false)
     private lateinit var pickAudioLauncher: ActivityResultLauncher<Intent>
     private lateinit var permissionLauncher: ActivityResultLauncher<String>
-
     private var tempAudioFile: File? = null
-
     private enum class RecordingIntention { CLIP, LIVE, NONE }
-
     private var recordingIntention = RecordingIntention.NONE
+
+    private fun isSpeechDetected(audioData: ShortArray, threshold: Float): Boolean {
+        if (audioData.isEmpty()) return false
+        val rms = kotlin.math.sqrt(audioData.map { it.toDouble() * it.toDouble() }.average())
+        val normalizedRms = rms / 32767.0f
+        return normalizedRms > threshold
+    }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         var appState: AppState by mutableStateOf(AppState.Idle)
         val coroutineScope = CoroutineScope(Dispatchers.Default)
 
@@ -122,7 +144,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyApplicationTheme {
-                EmotionEvaluatorScreen()
                 val currentLiveEmotion by liveEmotion.observeAsState()
                 val liveAmplitude by liveRecorder.amplitude.collectAsState()
                 val clipAmplitude by clipRecorder.amplitude.collectAsState()
@@ -132,6 +153,39 @@ class MainActivity : ComponentActivity() {
                     is AppState.Recording -> clipAmplitude
                     else -> 0f
                 }
+
+
+                LaunchedEffect(appState) {
+                    if (appState is AppState.LiveFeedback) {
+                        isLiveCalibrating = true
+                        Log.d("LivePipeline", "STATE CHANGE: LiveFeedback. Starting audio collection.")
+
+
+                        val targetBufferSize = (16000 * 1.2).toInt()
+                        var chunksReceived = 0
+
+                        liveRecorder.start { audioChunk ->
+                            liveAudioBuffer = liveAudioBuffer.plus(audioChunk)
+
+                            if (liveAudioBuffer.size > targetBufferSize) {
+                                liveAudioBuffer = liveAudioBuffer.takeLast(targetBufferSize).toShortArray()
+                            }
+                            chunksReceived++
+
+                            if (chunksReceived % 4 == 0) {
+                                coroutineScope.launch {
+                                    detectLiveEmotion(liveAudioBuffer.copyOf())
+                                }
+                            }
+                        }
+
+                    } else {
+                        Log.d("LivePipeline", "STATE CHANGE: Not LiveFeedback. Calling liveRecorder.stop()")
+                        liveRecorder.stop()
+                        liveAudioBuffer = ShortArray(0)
+                    }
+                }
+
 
                 MainScreen(
                     appState = appState,
@@ -156,8 +210,7 @@ class MainActivity : ComponentActivity() {
                         permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
                     },
                     onStopLiveRecording = {
-                        liveDetectionJob?.cancel()
-                        liveRecorder.stop()
+                        Log.d("LivePipeline", "Stop button pressed. Changing state to SessionSummary.")
                         appState = AppState.SessionSummary(sessionEmotions.toList())
                         sessionEmotions.clear()
                         _liveEmotion.value = null
@@ -176,12 +229,10 @@ class MainActivity : ComponentActivity() {
                     },
                     onPlayRecording = { uri -> audioPlayer.play(uri) },
                     onGoHome = {
-                        liveDetectionJob?.cancel()
-                        liveRecorder.stop()
-                        clipRecorder.stop()
+                        Log.d("LivePipeline", "Home button pressed. Changing state to Idle.")
+                        appState = AppState.Idle
                         sessionEmotions.clear()
                         _liveEmotion.value = null
-                        appState = AppState.Idle
                     },
                     triggerClipRecording = {
                         val timeStamp =
@@ -189,38 +240,20 @@ class MainActivity : ComponentActivity() {
                         tempAudioFile = File(cacheDir, "REC_${timeStamp}.wav")
                         tempAudioFile?.let { clipRecorder.start(it) }
                     },
-                    // THIS IS THE DEFINITIVE FIX FOR LIVE FEEDBACK
                     triggerLiveRecording = {
-                        liveDetectionJob?.cancel() // Cancel any old job before starting a new one.
-                        // Create a new parent job that we can control.
-                        liveDetectionJob = coroutineScope.launch {
-                            // Call the recorder's start function. The lambda provided to it
-                            // will be executed by the recorder for each audio chunk.
-                            liveRecorder.start { audioChunk ->
-                                // Inside the lambda, launch a new, small coroutine to process the chunk.
-                                // This prevents the detection from blocking the recording process.
-                                launch {
-                                    detectLiveEmotion(audioChunk)
-                                }
-                            }
-                        }
+                        // empty
                     }
                 )
             }
         }
     }
+
     @SuppressLint("Range")
     private fun getFileName(uri: Uri): String {
         return contentResolver.query(uri, null, null, null, null)?.use {
             if (it.moveToFirst()) it.getString(it.getColumnIndex(OpenableColumns.DISPLAY_NAME)) else "Unknown File"
         } ?: "Unknown File"
     }
-
-    // In your CURRENT MainActivity.kt, find and REPLACE the detectEmotion function
-
-    // In MainActivity.kt
-
-    // In MainActivity.kt
 
     private suspend fun detectEmotion(
         uri: Uri,
@@ -231,22 +264,17 @@ class MainActivity : ComponentActivity() {
         withContext(Dispatchers.Main) { onStart() }
         try {
             contentResolver.openInputStream(uri)?.use { inputStream ->
-                // Use the new, more informative header parser
                 val header = parseWavHeader(inputStream)
                     ?: throw Exception("Failed to parse WAV header.")
 
                 val audioBytes = inputStream.readBytes()
 
-                // --- THIS IS THE DEFINITIVE FIX ---
-                // Now we can correctly choose the conversion based on the audio format
                 val shortArray: ShortArray? = when (header.bitsPerSample) {
                     16 -> pcm16BitByteArrayToShortArray(audioBytes)
                     32 -> {
                         if (header.audioFormat == 3) { // 3 means 32-bit Float
-                            Log.d(TAG, "Detected 32-bit FLOAT audio. Using float-to-short converter.")
                             pcm32BitFloatByteArrayToShortArray(audioBytes)
                         } else { // Assume 1 means 32-bit Integer
-                            Log.d(TAG, "Detected 32-bit INTEGER audio. Using int-to-short converter.")
                             pcm32BitIntByteArrayToShortArray(audioBytes)
                         }
                     }
@@ -257,7 +285,12 @@ class MainActivity : ComponentActivity() {
                     throw Exception("Audio data is empty or failed conversion.")
                 }
 
-                // The rest of the logic is now correct and will receive proper data
+                val MIN_SAMPLES_THRESHOLD = 8000
+                val FILE_VAD_THRESHOLD = 0.01f
+                if (shortArray.size < MIN_SAMPLES_THRESHOLD || !isSpeechDetected(shortArray, FILE_VAD_THRESHOLD)) {
+                    onFailure("Recording is too short or silent. Unable to detect emotion.")
+                    return
+                }
                 val processedAudio = preprocessAudioForModel(shortArray)
                     ?: throw Exception("Audio preprocessing returned null.")
 
@@ -269,7 +302,6 @@ class MainActivity : ComponentActivity() {
                     valence = prediction[2],
                     dominance = prediction[1]
                 )
-                Log.d(TAG, "SUCCESS - VAD Vector -> Arousal: ${vector.arousal}, Valence: ${vector.valence}, Dominance: ${vector.dominance}")
                 withContext(Dispatchers.Main) { onSuccess(vector) }
 
             } ?: throw Exception("Failed to open input stream for URI.")
@@ -279,37 +311,89 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
-
-
-
-// Now, find and REPLACE the detectLiveEmotion function to match
-
     private suspend fun detectLiveEmotion(audioChunk: ShortArray) {
+        val LIVE_VAD_THRESHOLD = 0.015f
+        if (!isSpeechDetected(audioChunk, LIVE_VAD_THRESHOLD)) {
+            _liveEmotion.postValue(null)
+            Log.d("LivePipeline", "Silence detected in live chunk. Displaying 'Listening...'.")
+            return
+        }
+        Log.d("LivePipeline", "detectLiveEmotion: Started for chunk size ${audioChunk.size}.")
         try {
-            if (audioChunk.isEmpty()) return
+            if (audioChunk.isEmpty()) {
+                Log.w("LivePipeline", "Skipping empty audio chunk.")
+                return
+            }
 
-            // Use the simple, correct preprocessing
-            val processedAudio = preprocessAudioForModel(audioChunk) ?: return
-            val prediction = emotionPredictor.predict(processedAudio) ?: return
+            val processedAudio = preprocessAudioForModel(audioChunk)
+            val prediction = emotionPredictor.predict(processedAudio)
 
-            // --- THE CRITICAL FIX: Use the original, correct VAD mapping ---
+            if (prediction == null) {
+                Log.e("LivePipeline", "Model prediction was null.")
+                return
+            }
+
             val vector = EmotionVector(
                 arousal = prediction[0],
                 valence = prediction[2],
                 dominance = prediction[1]
             )
-            val mapped = mapVectorToEmotion(vector) // Your EmotionMapper now gets correct data
-
-            withContext(Dispatchers.Main) { _liveEmotion.value = mapped }
+            val mapped = mapVectorToEmotionForLive(vector)
             sessionEmotions.add(mapped)
+            emotionHistory.add(mapped.label)
+
+            val SMOOTHING_WINDOW_SIZE = 5
+            if (emotionHistory.size > SMOOTHING_WINDOW_SIZE) {
+                emotionHistory.removeAt(0)
+            }
+
+            val mostCommonEmotionLabel = emotionHistory
+                .groupingBy { it }
+                .eachCount()
+                .maxByOrNull { it.value }
+                ?.key
+
+            if (mostCommonEmotionLabel != null && mostCommonEmotionLabel != lastDisplayedEmotion) {
+                val CONFIDENCE_THRESHOLD = 2
+                val count = emotionHistory.count { it == mostCommonEmotionLabel }
+
+                if (count >= CONFIDENCE_THRESHOLD) {
+                    if (isLiveCalibrating) {
+                        isLiveCalibrating = false
+                    }
+                    lastDisplayedEmotion = mostCommonEmotionLabel
+                    val newEmotionToDisplay = createMappedEmotion(mostCommonEmotionLabel)
+                    _liveEmotion.postValue(newEmotionToDisplay)
+                    Log.d("LivePipeline", "UI UPDATE: Trend changed to '${newEmotionToDisplay.label}'.")
+                }
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Live detection on chunk failed", e)
+            Log.e("LivePipeline", "detectLiveEmotion: CRASHED with an exception.", e)
         }
     }
 
+    private fun createMappedEmotion(label: String): MappedEmotion {
+        return when(label) {
+            "Joy" -> MappedEmotion("Joy", "A positive and controlled emotional state.", Color(0xFFD4AF37))
+            "Surprise" -> MappedEmotion("Surprise", "A sharp, sudden reaction of moderate-to-high energy and control.", Color(0xFF40E0D0))
+            "Anger" -> MappedEmotion("Anger", "A powerful, aggressive, and high-energy negative state.", Color(0xFFB22222))
+            "Disgust" -> MappedEmotion("Disgust", "A controlled negative reaction to something unpleasant.", Color(0xFF556B2F))
+            "Sadness" -> MappedEmotion("Sadness", "A state of low energy, low positivity, and low control.", Color(0xFF191970))
+            "Fear" -> MappedEmotion("Fear", "A negative state defined by a lack of control.", Color(0xFF4B0082))
+            "Neutral" -> MappedEmotion("Neutral", "A balanced emotional state with no single strong emotion.", Color.Gray)
+            else -> MappedEmotion("...", "Listening...", Color.White)
+        }
+    }
 
-// --- ALL COMPOSABLE SCREENS ---
+    private fun mapVectorToEmotionForLive(vector: EmotionVector): MappedEmotion {
+        val (arousal, valence, dominance) = vector
+
+        val ENERGY_THRESHOLD = 0.45f
+        if (arousal < ENERGY_THRESHOLD && dominance < ENERGY_THRESHOLD) {
+            return createMappedEmotion("Neutral")
+        }
+        return mapVectorToEmotion(vector)
+    }
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -384,134 +468,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @Composable
-    fun FileSelectionScreen(
-        appState: AppState,
-        onOpenFileClick: () -> Unit,
-        onRecordAudioClick: () -> Unit,
-        onLiveFeedbackClick: () -> Unit,
-        onDetectClick: (String, Uri) -> Unit,
-        onPlayRecording: (Uri) -> Unit
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(2f),
-                contentAlignment = Alignment.Center
-            ) {
-                when (appState) {
-                    is AppState.Loading -> {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator()
-                            Spacer(Modifier.height(8.dp))
-                            Text("Loading ${appState.fileName}...")
-                        }
-                    }
-
-                    is AppState.Success -> {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Ready to analyze:", style = MaterialTheme.typography.titleMedium)
-                            Text(appState.fileName, fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(16.dp))
-                            Row {
-                                Button(onClick = {
-                                    onDetectClick(
-                                        appState.fileName,
-                                        appState.fileUri
-                                    )
-                                }) { Text("Detect Emotion") }
-                                Spacer(Modifier.width(16.dp))
-                                Button(onClick = { onPlayRecording(appState.fileUri) }) { Text("Replay") }
-                            }
-                        }
-                    }
-
-                    is AppState.Detecting -> {
-                        // --- FIX APPLIED HERE ---
-                        // This Column ensures both the spinner and the text are centered horizontally.
-                        // The textAlign on the Text composable handles multi-line centering if the file name is long.
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(horizontal = 16.dp) // Add padding for long file names
-                        ) {
-                            CircularProgressIndicator()
-                            Spacer(Modifier.height(8.dp))
-                            Text(
-                                text = "Detecting emotion in ${appState.fileName}...",
-                                textAlign = TextAlign.Center // This centers the text itself
-                            )
-                        }
-                    }
-
-                    is AppState.DetectionSuccess -> EmotionResult(vector = appState.result)
-                    is AppState.Failure -> Text(
-                        text = appState.message,
-                        color = MaterialTheme.colorScheme.error,
-                        textAlign = TextAlign.Center
-                    )
-
-                    else -> { /* Idle state */
-                    }
-                }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedButton(onClick = onLiveFeedbackClick, modifier = Modifier.height(80.dp)) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Outlined.Analytics, "Live Feedback")
-                        Text("Live")
-                    }
-                }
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    IconButton(
-                        onClick = onRecordAudioClick,
-                        modifier = Modifier.size(72.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Mic,
-                                "Record Audio",
-                                modifier = Modifier.size(36.dp),
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
-                    }
-                    Text("Record Clip", style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-
-            // --- CHANGE APPLIED HERE ---
-            // Added the instructional text right below the button row.
-            Text(
-                text = "For best results, record a clip at least 3 seconds long expressing one clear emotion.",
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-            )
-            // --- END OF CHANGE ---
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = onOpenFileClick) { Text("Or Open an Audio File") }
-            Spacer(modifier = Modifier.weight(1f))
-        }
-    }
 
     @Composable
     fun RecordingScreen(
@@ -581,12 +537,22 @@ class MainActivity : ComponentActivity() {
             verticalArrangement = Arrangement.Center
         ) {
             Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                val isCalibrating = liveEmotion == null && emotionHistory.isEmpty()
+                val textToShow = when {
+                    isCalibrating -> "Keep talking...\nEvaluating emotions..."
+                    liveEmotion == null -> "Listening..."
+                    else -> liveEmotion.label
+                }
+                val colorToShow = liveEmotion?.color ?: Color.White
+                val fontSizeToShow = if (isCalibrating) 36.sp else 48.sp
+
                 Text(
-                    text = liveEmotion?.label ?: "Listening...",
-                    fontSize = 48.sp,
+                    text = textToShow,
+                    fontSize = fontSizeToShow,
                     fontWeight = FontWeight.Bold,
-                    color = liveEmotion?.color ?: Color.White,
-                    textAlign = TextAlign.Center
+                    color = colorToShow,
+                    textAlign = TextAlign.Center,
+                    lineHeight = if (isCalibrating) 40.sp else 52.sp
                 )
             }
             ScrollingWaveform(
@@ -612,6 +578,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun SessionSummaryScreen(emotions: List<MappedEmotion>) {
         val emotionCounts = emotions.groupingBy { it.label }.eachCount()
+        val totalEmotions = emotions.size.coerceAtLeast(1)
 
         if (emotions.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -635,31 +602,31 @@ class MainActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                "Session Summary",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
+            Text("Session Summary", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(24.dp))
             Text("Primary Emotion Detected:", style = MaterialTheme.typography.titleMedium)
-            Text(
-                mostFrequentEmotion,
-                fontSize = 32.sp,
-                color = primaryEmotionColor,
-                fontWeight = FontWeight.Bold
-            )
+            Text(mostFrequentEmotion, fontSize = 32.sp, color = primaryEmotionColor, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(32.dp))
             Text("Emotion Breakdown:", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(8.dp))
             Column(horizontalAlignment = Alignment.Start) {
+                // --- NEW: LOGIC FOR PERCENTAGES ---
                 emotionCounts.forEach { (label, count) ->
+                    val percentage = (count.toFloat() / totalEmotions) * 100
                     val color = emotions.find { it.label == label }?.color ?: Color.Unspecified
-                    Text("$label: $count times", fontFamily = FontFamily.Monospace, color = color)
+                    // Use a formatted string to show the percentage nicely
+                    Text(
+                        text = "${label.padEnd(9)}: ${"%.1f".format(percentage)}%",
+                        fontFamily = FontFamily.Monospace,
+                        color = color
+                    )
                 }
             }
         }
     }
 
+
+    // FIX: ADDING THE MISSING EMOTIONRESULT COMPOSABLE
     @Composable
     fun EmotionResult(vector: EmotionVector) {
         val mappedEmotion = mapVectorToEmotion(vector)
@@ -704,22 +671,100 @@ class MainActivity : ComponentActivity() {
         waveColor: Color = MaterialTheme.colorScheme.primary
     ) {
         Canvas(modifier = modifier) {
-            val canvasWidth = size.width;
-            val canvasHeight = size.height;
+            val canvasWidth = size.width
+            val canvasHeight = size.height
             val middleY = canvasHeight / 2
             val barWidth = if (amplitudes.isNotEmpty()) canvasWidth / amplitudes.size else 0f
             amplitudes.forEachIndexed { index, amplitude ->
-                val x = index * barWidth;
+                val x = index * barWidth
                 val barHeight = amplitude * canvasHeight
                 drawLine(
                     color = waveColor,
-                    start = androidx.compose.ui.geometry.Offset(x, middleY - barHeight / 2),
-                    end = androidx.compose.ui.geometry.Offset(x, middleY + barHeight / 2),
+                    start = Offset(x, middleY - barHeight / 2),
+                    end = Offset(x, middleY + barHeight / 2),
                     strokeWidth = 4f
                 )
             }
         }
     }
+
+
+    @Composable
+    fun WelcomeSection() {
+        val provider = remember {
+            GoogleFont.Provider(
+                providerAuthority = "com.google.android.gms.fonts",
+                providerPackage = "com.google.android.gms",
+                certificates = R.array.com_google_android_gms_fonts_certs
+            )
+        }
+
+        val fontFamily = remember {
+            FontFamily(
+                Font(GoogleFont("Montserrat"), provider, FontWeight.Bold),
+                Font(GoogleFont("Montserrat"), provider, FontWeight.Normal)
+            )
+        }
+
+        val animatedVisibility = remember { MutableTransitionState(false) }
+            .apply { targetState = true }
+
+        AnimatedVisibility(
+            visibleState = animatedVisibility,
+            enter = slideInVertically(
+                initialOffsetY = { it / 2 },
+                animationSpec = tween(durationMillis = 1000, delayMillis = 200, easing = EaseOutCubic)
+            ) + fadeIn(animationSpec = tween(1000, delayMillis = 200)),
+            exit = fadeOut()
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "SER",
+                    fontFamily = fontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 80.sp,
+                    color = Color.White,
+                    modifier = Modifier.graphicsLayer {
+                        shadowElevation = 20f
+                    }
+                )
+                Text(
+                    text = "Speech Emotion Recognition",
+                    fontFamily = fontFamily,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    letterSpacing = 2.sp,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+                Text(
+                    text = "Discover the emotional landscape of your voice. Using the VAD model, SER maps your speech to core emotions like Joy, Anger, and Sadness in real-time.",
+                    textAlign = TextAlign.Center,
+                    fontFamily = fontFamily,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.White.copy(alpha = 0.8f),
+                    lineHeight = 24.sp,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(horizontal = 32.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "VAD stands for Valence-Arousal-Dominance; valence - positive/negative energy; arousal - energetic/tired energy; dominance - dominant/subservient energy.",
+                    textAlign = TextAlign.Center,
+                    fontFamily = fontFamily,
+                    fontWeight = FontWeight.Normal,
+                    color = Color.White.copy(alpha = 0.5f),
+                    lineHeight = 18.sp,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(horizontal = 32.dp)
+                )
+            }
+        }
+    }
+
 
     @Composable
     fun PostRecordingScreen(
@@ -735,7 +780,6 @@ class MainActivity : ComponentActivity() {
         ) {
             Text("Recording Complete", fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Text(appState.fileName)
-            // FIXED: Corrected the typo from spacedby to spacedBy
             Row(
                 horizontalArrangement = Arrangement.spacedBy(24.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -764,77 +808,141 @@ class MainActivity : ComponentActivity() {
             }) { Text("Detect Emotion From This Recording") }
         }
     }
-}
-@Composable
-fun EmotionEvaluatorScreen() {
-    // --- FIX: Use rememberSaveable to preserve state on screen rotation ---
-    // These state holders will now survive activity recreation.
-    var arousal by rememberSaveable { mutableStateOf(0.5f) }
-    var valence by rememberSaveable { mutableStateOf(0.5f) }
-    var dominance by rememberSaveable { mutableStateOf(0.5f) }
 
-    // The emotion vector is derived from the state, so it will update automatically.
-    val emotionVector = EmotionVector(arousal, valence, dominance)
-
-    // The mapping logic is called here.
-    val mappedEmotion = mapVectorToEmotion(emotionVector)
-
-    // UI Layout
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+    @Composable
+    fun FileSelectionScreen(
+        appState: AppState,
+        onOpenFileClick: () -> Unit,
+        onRecordAudioClick: () -> Unit,
+        onLiveFeedbackClick: () -> Unit,
+        onDetectClick: (String, Uri) -> Unit,
+        onPlayRecording: (Uri) -> Unit
     ) {
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF0D1117),
+                            Color(0xFF010409)
+                        )
+                    )
+                )
         ) {
-            // Display the resulting emotion
-            Text(
-                text = mappedEmotion.label,
-                fontSize = 48.sp,
-                fontWeight = FontWeight.Bold,
-                color = mappedEmotion.color
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = mappedEmotion.description,
-                fontSize = 16.sp,
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // VAD Sliders
-            VADSlider(
-                label = "Valence",
-                value = valence,
-                onValueChange = { valence = it }
-            )
-            VADSlider(
-                label = "Arousal",
-                value = arousal,
-                onValueChange = { arousal = it }
-            )
-            VADSlider(
-                label = "Dominance",
-                value = dominance,
-                onValueChange = { dominance = it }
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Spacer(modifier = Modifier.height(60.dp))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AnimatedContent(
+                        targetState = appState,
+                        label = "FileScreenState",
+                        transitionSpec = {
+                            fadeIn(animationSpec = tween(300)) togetherWith
+                                    fadeOut(animationSpec = tween(300))
+                        }
+                    ) { state ->
+                        when (state) {
+                            is AppState.Loading -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                CircularProgressIndicator()
+                                Spacer(Modifier.height(8.dp))
+                                Text("Loading ${state.fileName}...")
+                            }
+                            is AppState.Success -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Ready to analyze:", style = MaterialTheme.typography.titleMedium)
+                                Text(state.fileName, fontWeight = FontWeight.Bold)
+                                Spacer(Modifier.height(16.dp))
+                                Row {
+                                    Button(onClick = { onDetectClick(state.fileName, state.fileUri) }) { Text("Detect Emotion") }
+                                    Spacer(Modifier.width(16.dp))
+                                    Button(onClick = { onPlayRecording(state.fileUri) }) { Text("Replay") }
+                                }
+                            }
+                            is AppState.Detecting -> Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            ) {
+                                CircularProgressIndicator()
+                                Spacer(Modifier.height(8.dp))
+                                Text(text = "Detecting emotion in ${state.fileName}...", textAlign = TextAlign.Center)
+                            }
+                            is AppState.DetectionSuccess -> EmotionResult(vector = state.result)
+                            is AppState.Failure -> Text(text = state.message, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
+                            else -> {
+                                WelcomeSection()
+                            }
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(50.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedButton(onClick = onLiveFeedbackClick, modifier = Modifier.height(80.dp)) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Outlined.Analytics, "Live Feedback")
+                            Text("Live")
+                        }
+                    }
+                    val infiniteTransition = rememberInfiniteTransition(label = "Breathing")
+                    val scale by infiniteTransition.animateFloat(
+                        initialValue = 1f,
+                        targetValue = 1.1f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(1500, easing = LinearEasing),
+                            repeatMode = RepeatMode.Reverse
+                        ), label = "scale"
+                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        IconButton(
+                            onClick = onRecordAudioClick,
+                            modifier = Modifier
+                                .size(72.dp)
+                                .scale(scale)
+                                .graphicsLayer { shadowElevation = 8.dp.toPx() }
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(Icons.Default.Mic, "Record Audio", modifier = Modifier.size(36.dp), tint = MaterialTheme.colorScheme.onPrimary)
+                            }
+                        }
+                        Text("Record Clip", style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+                Text(
+                    text = "For best results, record for at least 3 seconds but not too long expressing one clear emotion.",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+                Text(
+                    text = "For live emotion detection, you may express multiple emotions, but be sure to record for a longer period of time",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(onClick = onOpenFileClick) { Text("Or Open an Audio File") }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
         }
-    }
-}
-
-@Composable
-fun VADSlider(label: String, value: Float, onValueChange: (Float) -> Unit) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
-        Text(text = "$label: ${"%.2f".format(value)}")
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = 0f..1f
-        )
     }
 }

@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.myapplication.app-mergeDebugResources-55:/values-ca/values-ca.xml",
+            "outputFile": "com.example.myapplication.app-mergeDebugResources-56:/values-ca/values-ca.xml",
             "map": [
                 {
                     "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\31c0bed87cd5c955ba72ff4040810514\\transformed\\material3-release\\res\\values-ca\\values-ca.xml",
@@ -18,23 +18,6 @@
                         "startOffsets": "2343,2464,2583,2702,2822,2922,3020,3135,3277,3392,3551,3635,3733,3831,3932,4049,4178,4281,4422,4562,4703,4869,5002,5119,5240,5369,5468,5565,5686,5831,5937,6050,6164,6303,6448,6557,6664,6750,6851,6952,7038,7124,7235,7315,7399,7500,7608,7707,7811,7898,8011,8111,8218,8337,8417,8534",
                         "endColumns": "120,118,118,119,99,97,114,141,114,158,83,97,97,100,116,128,102,140,139,140,165,132,116,120,128,98,96,120,144,105,112,113,138,144,108,106,85,100,100,85,85,110,79,83,100,107,98,103,86,112,99,106,118,79,116,106",
                         "endOffsets": "2459,2578,2697,2817,2917,3015,3130,3272,3387,3546,3630,3728,3826,3927,4044,4173,4276,4417,4557,4698,4864,4997,5114,5235,5364,5463,5560,5681,5826,5932,6045,6159,6298,6443,6552,6659,6745,6846,6947,7033,7119,7230,7310,7394,7495,7603,7702,7806,7893,8006,8106,8213,8332,8412,8529,8636"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\3c4b5d56ee41c259812271e7dd7d6395\\transformed\\foundation-release\\res\\values-ca\\values-ca.xml",
-                    "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,153",
-                        "endColumns": "97,101",
-                        "endOffsets": "148,250"
-                    },
-                    "to": {
-                        "startLines": "100,101",
-                        "startColumns": "4,4",
-                        "startOffsets": "10081,10179",
-                        "endColumns": "97,101",
-                        "endOffsets": "10174,10276"
                     }
                 },
                 {
@@ -72,6 +55,23 @@
                     }
                 },
                 {
+                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\e412f02f9951a4fd446d4856fc4b7ddb\\transformed\\foundation-release\\res\\values-ca\\values-ca.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,153",
+                        "endColumns": "97,101",
+                        "endOffsets": "148,250"
+                    },
+                    "to": {
+                        "startLines": "100,101",
+                        "startColumns": "4,4",
+                        "startOffsets": "10081,10179",
+                        "endColumns": "97,101",
+                        "endOffsets": "10174,10276"
+                    }
+                },
+                {
                     "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\55097f130fc3784744cd64e6c9b4f6e4\\transformed\\core-1.12.0\\res\\values-ca\\values-ca.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
@@ -89,7 +89,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\42a3c19dd7949dcb29f7c0964ca30b2a\\transformed\\ui-release\\res\\values-ca\\values-ca.xml",
+                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\befe31e03379a58c8e698d1d0e2d2b04\\transformed\\ui-release\\res\\values-ca\\values-ca.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",

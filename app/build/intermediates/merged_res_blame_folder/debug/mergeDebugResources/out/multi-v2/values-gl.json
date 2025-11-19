@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.example.myapplication.app-mergeDebugResources-55:/values-gl/values-gl.xml",
+            "outputFile": "com.example.myapplication.app-mergeDebugResources-56:/values-gl/values-gl.xml",
             "map": [
                 {
                     "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\a38d3c41066dd209fea41f5a6a534ad3\\transformed\\media3-exoplayer-1.3.1\\res\\values-gl\\values-gl.xml",
@@ -18,6 +18,23 @@
                         "startOffsets": "1462,1536,1599,1664,1743,1820,1896,1995,2091",
                         "endColumns": "73,62,64,78,76,75,98,95,68",
                         "endOffsets": "1531,1594,1659,1738,1815,1891,1990,2086,2155"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\e412f02f9951a4fd446d4856fc4b7ddb\\transformed\\foundation-release\\res\\values-gl\\values-gl.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,154",
+                        "endColumns": "98,100",
+                        "endOffsets": "149,250"
+                    },
+                    "to": {
+                        "startLines": "100,101",
+                        "startColumns": "4,4",
+                        "startOffsets": "10084,10183",
+                        "endColumns": "98,100",
+                        "endOffsets": "10178,10279"
                     }
                 },
                 {
@@ -55,7 +72,7 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\42a3c19dd7949dcb29f7c0964ca30b2a\\transformed\\ui-release\\res\\values-gl\\values-gl.xml",
+                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\befe31e03379a58c8e698d1d0e2d2b04\\transformed\\ui-release\\res\\values-gl\\values-gl.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -86,23 +103,6 @@
                         "startOffsets": "2332,2453,2571,2694,2814,2915,3011,3124,3262,3380,3533,3617,3720,3817,3918,4036,4154,4262,4401,4539,4691,4876,5011,5130,5252,5377,5475,5572,5693,5841,5942,6055,6169,6309,6454,6564,6670,6756,6852,6948,7035,7121,7227,7309,7393,7494,7601,7692,7791,7879,7992,8093,8196,8320,8402,8520",
                         "endColumns": "120,117,122,119,100,95,112,137,117,152,83,102,96,100,117,117,107,138,137,151,184,134,118,121,124,97,96,120,147,100,112,113,139,144,109,105,85,95,95,86,85,105,81,83,100,106,90,98,87,112,100,102,123,81,117,107",
                         "endOffsets": "2448,2566,2689,2809,2910,3006,3119,3257,3375,3528,3612,3715,3812,3913,4031,4149,4257,4396,4534,4686,4871,5006,5125,5247,5372,5470,5567,5688,5836,5937,6050,6164,6304,6449,6559,6665,6751,6847,6943,7030,7116,7222,7304,7388,7489,7596,7687,7786,7874,7987,8088,8191,8315,8397,8515,8623"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\moonw\\.gradle\\caches\\8.13\\transforms\\3c4b5d56ee41c259812271e7dd7d6395\\transformed\\foundation-release\\res\\values-gl\\values-gl.xml",
-                    "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,154",
-                        "endColumns": "98,100",
-                        "endOffsets": "149,250"
-                    },
-                    "to": {
-                        "startLines": "100,101",
-                        "startColumns": "4,4",
-                        "startOffsets": "10084,10183",
-                        "endColumns": "98,100",
-                        "endOffsets": "10178,10279"
                     }
                 }
             ]
