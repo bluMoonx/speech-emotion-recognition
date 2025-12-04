@@ -56,6 +56,7 @@ dependencies {
 
     // 2. Core Jetpack libraries with stable, known-good versions.
     implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.media:media:1.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")

@@ -18,8 +18,8 @@
 14        android:maxSdkVersion="28" />
 14-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:79-105
 15    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-15-->[androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:22:5-79
-15-->[androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:22:22-76
+15-->[androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:22:5-79
+15-->[androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:22:22-76
 16
 17    <permission
 17-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\55097f130fc3784744cd64e6c9b4f6e4\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47

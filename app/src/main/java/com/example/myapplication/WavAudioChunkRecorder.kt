@@ -1,82 +1,83 @@
+// In WavAudioChunkRecorder.kt
+
 package com.example.myapplication
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.util.Log
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlin.math.abs
-
-private const val TAG = "LivePipeline"
 
 class WavAudioChunkRecorder(
     private val context: Context,
+    private val scope: CoroutineScope,
+    // FIX: Added a callback to send audio data out
+    private val onChunkReady: (ShortArray) -> Unit
 ) {
     private var audioRecord: AudioRecord? = null
     private var recordingJob: Job? = null
-    // This is the dedicated scope for this class. It's correct.
-    private val recorderScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    private val bufferSize = AudioRecord.getMinBufferSize(
-        16000,
-        AudioFormat.CHANNEL_IN_MONO,
-        AudioFormat.ENCODING_PCM_16BIT
-    ) * 2
-    private val audioBuffer = ShortArray(bufferSize / 2)
+    private var isRecording = false
 
     private val _amplitude = MutableStateFlow(0f)
-    val amplitude: StateFlow<Float> = _amplitude
+    val amplitude = _amplitude.asStateFlow()
 
-    @SuppressLint("MissingPermission")
-    fun start(onChunkReady: (ShortArray) -> Unit) {
-        if (recordingJob?.isActive == true) {
-            Log.w(TAG, "WavAudioChunkRecorder: Recording is already active.")
+    private val sampleRate = 16000
+    private val channelConfig = AudioFormat.CHANNEL_IN_MONO
+    private val audioFormat = AudioFormat.ENCODING_PCM_16BIT
+    // Process audio in 1-second chunks
+    private val bufferSize = sampleRate * 1
+
+    fun start() {
+        if (isRecording) return
+        val minBufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat)
+        try {
+            audioRecord = AudioRecord(
+                MediaRecorder.AudioSource.MIC,
+                sampleRate,
+                channelConfig,
+                audioFormat,
+                minBufferSize.coerceAtLeast(bufferSize)
+            ).also {
+                it.startRecording()
+                isRecording = true
+            }
+        } catch (e: SecurityException) {
+            Log.e("WavAudioChunkRecorder", "AudioRecord permission denied.", e)
             return
         }
-        Log.d(TAG, "WavAudioChunkRecorder: START method called.")
-        audioRecord = AudioRecord(
-            MediaRecorder.AudioSource.MIC,
-            16000,
-            AudioFormat.CHANNEL_IN_MONO,
-            AudioFormat.ENCODING_PCM_16BIT,
-            bufferSize
-        )
 
-        if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
-            Log.e(TAG, "WavAudioChunkRecorder: AudioRecord could not be initialized.")
-            return
-        }
+        recordingJob = scope.launch(Dispatchers.IO) {
+            val audioBuffer = ShortArray(bufferSize)
+            while (isRecording) {
+                val readResult = audioRecord?.read(audioBuffer, 0, bufferSize) ?: 0
+                if (readResult > 0) {
+                    // Send the chunk to the ViewModel
+                    onChunkReady(audioBuffer.clone())
 
-        audioRecord?.startRecording()
-
-        // --- FIX #1: Use recorderScope, not coroutineScope ---
-        recordingJob = recorderScope.launch {
-            Log.d(TAG, "WavAudioChunkRecorder: Recording coroutine started.")
-            while (isActive) {
-                val readSize = audioRecord?.read(audioBuffer, 0, audioBuffer.size) ?: 0
-                if (readSize > 0) {
-                    val chunk = audioBuffer.copyOf(readSize)
-                    onChunkReady(chunk)
-
-                    val maxAmplitude = chunk.maxOfOrNull { abs(it.toFloat()) } ?: 0f
-                    _amplitude.value = maxAmplitude / 32768.0f
+                    // Calculate and update amplitude for the UI
+                    val maxAmplitude = audioBuffer.maxOfOrNull { abs(it.toInt()) } ?: 0
+                    _amplitude.value = maxAmplitude.toFloat() / Short.MAX_VALUE
                 }
             }
         }
     }
 
     fun stop() {
+        if (!isRecording) return
+        isRecording = false
         recordingJob?.cancel()
-        if (audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
-            audioRecord?.stop()
+        audioRecord?.apply {
+            stop()
+            release()
         }
-        audioRecord?.release()
         audioRecord = null
         _amplitude.value = 0f
-        Log.d(TAG, "WavAudioChunkRecorder has been explicitly stopped.")
     }
 }

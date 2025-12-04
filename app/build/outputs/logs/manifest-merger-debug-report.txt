@@ -4,6 +4,15 @@ ADDED from C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\A
 INJECTED from C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:1-29:12
 INJECTED from C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:1-29:12
 INJECTED from C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:2:1-29:12
+MERGED from [androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.media3:media3-extractor:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\7904f93fad11a4446a71383e2fcff313\transformed\media3-extractor-1.3.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-container:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\0d79ea9f3b94fc8b08ec91b84325a4b8\transformed\media3-container-1.3.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-datasource:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\de1ed085151a35a6a78d4b641ce59064\transformed\media3-datasource-1.3.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-decoder:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\ed65fda794b0c9bbaccddb8754405eb8\transformed\media3-decoder-1.3.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-database:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\9b186c93adbbfad0c7a169391e3adb11\transformed\media3-database-1.3.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:17:1-24:12
+MERGED from [androidx.media3:media3-session:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\abc188ae2714be20da5e163b9ab63dd4\transformed\media3-session-1.3.1\AndroidManifest.xml:17:1-22:12
+MERGED from [androidx.media:media:1.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\8af840752ec51cf1274a6d43007ed8dc\transformed\media-1.7.0\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.navigation:navigation-common:2.7.7] C:\Users\moonw\.gradle\caches\8.13\transforms\b0a927ffb17bf6c5dd9390b1e836050e\transformed\navigation-common-2.7.7\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-runtime:2.7.7] C:\Users\moonw\.gradle\caches\8.13\transforms\e736e6516ca42d85aee970bceba67bd9\transformed\navigation-runtime-2.7.7\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.navigation:navigation-common-ktx:2.7.7] C:\Users\moonw\.gradle\caches\8.13\transforms\d21809ef360975117e1fa1d47ff54481\transformed\navigation-common-ktx-2.7.7\AndroidManifest.xml:2:1-7:12
@@ -48,15 +57,6 @@ MERGED from [androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0] C:\Users\moon
 MERGED from [androidx.compose.ui:ui-android:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\befe31e03379a58c8e698d1d0e2d2b04\transformed\ui-release\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\79c096a648ea41de7221f2c115a4167b\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:17:1-28:12
 MERGED from [androidx.compose.ui:ui-text-google-fonts:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\5b49ddb4914b2c5d5ee366be89564359\transformed\ui-text-google-fonts-1.6.6\AndroidManifest.xml:2:1-7:12
-MERGED from [androidx.media3:media3-session:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\abc188ae2714be20da5e163b9ab63dd4\transformed\media3-session-1.3.1\AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.media3:media3-extractor:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\7904f93fad11a4446a71383e2fcff313\transformed\media3-extractor-1.3.1\AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.media3:media3-container:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\0d79ea9f3b94fc8b08ec91b84325a4b8\transformed\media3-container-1.3.1\AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.media3:media3-datasource:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\de1ed085151a35a6a78d4b641ce59064\transformed\media3-datasource-1.3.1\AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.media3:media3-decoder:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\ed65fda794b0c9bbaccddb8754405eb8\transformed\media3-decoder-1.3.1\AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.media3:media3-database:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\9b186c93adbbfad0c7a169391e3adb11\transformed\media3-database-1.3.1\AndroidManifest.xml:17:1-22:12
-MERGED from [androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:17:1-24:12
-MERGED from [androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:17:1-24:12
-MERGED from [androidx.media:media:1.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\8af840752ec51cf1274a6d43007ed8dc\transformed\media-1.7.0\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.autofill:autofill:1.0.0] C:\Users\moonw\.gradle\caches\8.13\transforms\6f0135be2e3373346efc805cf7722b09\transformed\autofill-1.0.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\55097f130fc3784744cd64e6c9b4f6e4\transformed\core-1.12.0\AndroidManifest.xml:17:1-30:12
 MERGED from [androidx.customview:customview-poolingcontainer:1.0.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93123175f16bfe3266df039dc3501a63\transformed\customview-poolingcontainer-1.0.0\AndroidManifest.xml:17:1-23:12
@@ -155,6 +155,24 @@ uses-sdk
 INJECTED from C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml
 INJECTED from C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml
+MERGED from [androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-extractor:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\7904f93fad11a4446a71383e2fcff313\transformed\media3-extractor-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-extractor:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\7904f93fad11a4446a71383e2fcff313\transformed\media3-extractor-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-container:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\0d79ea9f3b94fc8b08ec91b84325a4b8\transformed\media3-container-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-container:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\0d79ea9f3b94fc8b08ec91b84325a4b8\transformed\media3-container-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-datasource:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\de1ed085151a35a6a78d4b641ce59064\transformed\media3-datasource-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-datasource:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\de1ed085151a35a6a78d4b641ce59064\transformed\media3-datasource-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-decoder:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\ed65fda794b0c9bbaccddb8754405eb8\transformed\media3-decoder-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-decoder:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\ed65fda794b0c9bbaccddb8754405eb8\transformed\media3-decoder-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-database:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\9b186c93adbbfad0c7a169391e3adb11\transformed\media3-database-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-database:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\9b186c93adbbfad0c7a169391e3adb11\transformed\media3-database-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-session:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\abc188ae2714be20da5e163b9ab63dd4\transformed\media3-session-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media3:media3-session:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\abc188ae2714be20da5e163b9ab63dd4\transformed\media3-session-1.3.1\AndroidManifest.xml:20:5-44
+MERGED from [androidx.media:media:1.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\8af840752ec51cf1274a6d43007ed8dc\transformed\media-1.7.0\AndroidManifest.xml:5:5-44
+MERGED from [androidx.media:media:1.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\8af840752ec51cf1274a6d43007ed8dc\transformed\media-1.7.0\AndroidManifest.xml:5:5-44
 MERGED from [androidx.navigation:navigation-common:2.7.7] C:\Users\moonw\.gradle\caches\8.13\transforms\b0a927ffb17bf6c5dd9390b1e836050e\transformed\navigation-common-2.7.7\AndroidManifest.xml:20:5-44
 MERGED from [androidx.navigation:navigation-common:2.7.7] C:\Users\moonw\.gradle\caches\8.13\transforms\b0a927ffb17bf6c5dd9390b1e836050e\transformed\navigation-common-2.7.7\AndroidManifest.xml:20:5-44
 MERGED from [androidx.navigation:navigation-runtime:2.7.7] C:\Users\moonw\.gradle\caches\8.13\transforms\e736e6516ca42d85aee970bceba67bd9\transformed\navigation-runtime-2.7.7\AndroidManifest.xml:20:5-44
@@ -243,24 +261,6 @@ MERGED from [androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\
 MERGED from [androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\79c096a648ea41de7221f2c115a4167b\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:20:5-44
 MERGED from [androidx.compose.ui:ui-text-google-fonts:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\5b49ddb4914b2c5d5ee366be89564359\transformed\ui-text-google-fonts-1.6.6\AndroidManifest.xml:5:5-44
 MERGED from [androidx.compose.ui:ui-text-google-fonts:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\5b49ddb4914b2c5d5ee366be89564359\transformed\ui-text-google-fonts-1.6.6\AndroidManifest.xml:5:5-44
-MERGED from [androidx.media3:media3-session:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\abc188ae2714be20da5e163b9ab63dd4\transformed\media3-session-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-session:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\abc188ae2714be20da5e163b9ab63dd4\transformed\media3-session-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-extractor:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\7904f93fad11a4446a71383e2fcff313\transformed\media3-extractor-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-extractor:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\7904f93fad11a4446a71383e2fcff313\transformed\media3-extractor-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-container:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\0d79ea9f3b94fc8b08ec91b84325a4b8\transformed\media3-container-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-container:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\0d79ea9f3b94fc8b08ec91b84325a4b8\transformed\media3-container-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-datasource:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\de1ed085151a35a6a78d4b641ce59064\transformed\media3-datasource-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-datasource:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\de1ed085151a35a6a78d4b641ce59064\transformed\media3-datasource-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-decoder:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\ed65fda794b0c9bbaccddb8754405eb8\transformed\media3-decoder-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-decoder:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\ed65fda794b0c9bbaccddb8754405eb8\transformed\media3-decoder-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-database:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\9b186c93adbbfad0c7a169391e3adb11\transformed\media3-database-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-database:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\9b186c93adbbfad0c7a169391e3adb11\transformed\media3-database-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:20:5-44
-MERGED from [androidx.media:media:1.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\8af840752ec51cf1274a6d43007ed8dc\transformed\media-1.7.0\AndroidManifest.xml:5:5-44
-MERGED from [androidx.media:media:1.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\8af840752ec51cf1274a6d43007ed8dc\transformed\media-1.7.0\AndroidManifest.xml:5:5-44
 MERGED from [androidx.autofill:autofill:1.0.0] C:\Users\moonw\.gradle\caches\8.13\transforms\6f0135be2e3373346efc805cf7722b09\transformed\autofill-1.0.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.autofill:autofill:1.0.0] C:\Users\moonw\.gradle\caches\8.13\transforms\6f0135be2e3373346efc805cf7722b09\transformed\autofill-1.0.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\55097f130fc3784744cd64e6c9b4f6e4\transformed\core-1.12.0\AndroidManifest.xml:20:5-44
@@ -291,6 +291,12 @@ MERGED from [com.microsoft.onnxruntime:onnxruntime-android:1.17.3] C:\Users\moon
 		INJECTED from C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml
 	android:minSdkVersion
 		INJECTED from C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from [androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:22:5-79
+MERGED from [androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:22:5-79
+MERGED from [androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:22:5-79
+	android:name
+		ADDED from [androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:22:22-76
 activity#androidx.compose.ui.tooling.PreviewActivity
 ADDED from [androidx.compose.ui:ui-tooling-android:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\8bbc14bccca35191bc70447123d1aec7\transformed\ui-tooling-release\AndroidManifest.xml:23:9-25:39
 	android:exported
@@ -331,12 +337,6 @@ ADDED from [androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\c
 		ADDED from [androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\79c096a648ea41de7221f2c115a4167b\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:25:13-36
 	android:name
 		ADDED from [androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\79c096a648ea41de7221f2c115a4167b\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:24:13-63
-uses-permission#android.permission.ACCESS_NETWORK_STATE
-ADDED from [androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:22:5-79
-MERGED from [androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:22:5-79
-MERGED from [androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:22:5-79
-	android:name
-		ADDED from [androidx.media3:media3-common:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\40fec1a388a03990ffb178de9e24bada\transformed\media3-common-1.3.1\AndroidManifest.xml:22:22-76
 permission#${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
 ADDED from [androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\55097f130fc3784744cd64e6c9b4f6e4\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
 	android:protectionLevel
