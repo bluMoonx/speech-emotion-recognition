@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaCodec
 import android.media.MediaExtractor
+import androidx.compose.material.icons.filled.Podcasts
 import android.media.MediaFormat
 import android.net.Uri
 import android.os.Bundle
@@ -55,6 +56,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.text.color
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -74,7 +76,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.min
 import kotlin.math.sqrt
-
+import androidx.navigation.NavHostController
 private const val TAG = "ULTRA_DEBUG"
 private val EMPTY_CERTIFICATES = emptyList<List<ByteArray>>()
 
@@ -82,6 +84,7 @@ private val EMPTY_CERTIFICATES = emptyList<List<ByteArray>>()
 sealed interface AppState {
     object Idle : AppState
     object Recording : AppState
+    object LiveRecording : AppState
     data class SessionSummary(val emotions: List<MappedEmotion>) : AppState
     data class Success(val fileName: String, val fileUri: Uri) : AppState
     data class PostRecordingReview(val fileName: String, val fileUri: Uri) : AppState
@@ -89,8 +92,17 @@ sealed interface AppState {
     data class DetectionSuccess(val result: EmotionVector) : AppState
     data class Failure(val message: String) : AppState
 }
-
-data class HistoryItem(val id: String = UUID.randomUUID().toString(), val permanentPath: String, val userConfirmedEmotion: String, val detectedEmotion: String, val vector: EmotionVector, val timestamp: Long = System.currentTimeMillis())
+enum class HistoryItemType { CLIP, SESSION }
+data class HistoryItem(
+    val id: String = UUID.randomUUID().toString(),
+    val title: String,
+    val permanentPath: String,
+    val userConfirmedEmotion: String, // For sessions, this could be the primary detected emotion
+    val detectedEmotion: String,      // For sessions, this can be a summary string like "Joy, Anger, Sadness"
+    val vector: EmotionVector,        // For sessions, this can be the average vector
+    val timestamp: Long = System.currentTimeMillis(),
+    val type: HistoryItemType = HistoryItemType.CLIP // Add this field
+)
 //endregion
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,7 +130,7 @@ class MainActivity : ComponentActivity() {
     private var tempAudioFile: File? = null
     private var recordingIntention = RecordingIntention.NONE
     private var navigateToLive by mutableStateOf(false)
-
+    private lateinit var navController: NavHostController
     private enum class RecordingIntention { CLIP, LIVE, NONE }
     //endregion
 
@@ -148,7 +160,9 @@ class MainActivity : ComponentActivity() {
                     }
                     RecordingIntention.LIVE -> {
                         Log.d(TAG, "Permission granted for LIVE. Setting trigger to navigate.")
-                        navigateToLive = true
+                        audioViewModel.startRecording() // Assuming viewModel is your AudioViewModel
+                        appState = AppState.LiveRecording
+                        navController.navigate("live")
                     }
                     else -> {}
                 }
@@ -161,7 +175,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyApplicationTheme {
-                val navController = rememberNavController()
+                navController = rememberNavController()
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
                 val historyItems by history.collectAsState()
@@ -192,7 +206,12 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onFailure = { message ->
                                     scope.launch(Dispatchers.Main) {
+                                        // Set the state AND navigate to the new failure screen
                                         appState = AppState.Failure(message)
+                                        navController.navigate("failure") {
+                                            // Optional: clear the "detecting" screen from the backstack
+                                            popUpTo("detecting") { inclusive = true }
+                                        }
                                     }
                                 }
                             )
@@ -282,6 +301,9 @@ class MainActivity : ComponentActivity() {
                                                     }
                                                 }
                                             }
+                                            is AppState.LiveRecording -> {
+                                                WelcomeScreen({}, {}, {})
+                                            }
                                             is AppState.Success -> {
                                                 // Handle file picked successfully, move to review
                                                 LaunchedEffect(Unit) {
@@ -289,14 +311,9 @@ class MainActivity : ComponentActivity() {
                                                     navController.navigate("review")
                                                 }
                                             }
-                                            is AppState.Failure -> {
-                                                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(16.dp)) {
-                                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                        Text(text = state.message, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
-                                                        Spacer(Modifier.height(16.dp))
-                                                        Button(onClick = { appState = AppState.Idle }) { Text("Return Home") }
-                                                    }
-                                                }
+
+                                            is AppState.SessionSummary -> {
+                                                WelcomeScreen({}, {}, {})
                                             }
                                             else -> {
                                                 // Fallback for other states on the home route, show a loader or idle.
@@ -313,7 +330,9 @@ class MainActivity : ComponentActivity() {
                                 if (state is AppState.PostRecordingReview) {
                                     PostRecordingScreen(
                                         appState = state,
-                                        onDetectClick = { _, uri -> appState = AppState.Detecting(state.fileName, uri) }, // This will trigger the LaunchedEffect
+                                        onDetectClick = { _, uri ->
+                                            appState = AppState.Detecting(state.fileName, uri)
+                                            navController.navigate("detecting") }, // This will trigger the LaunchedEffect
                                         onPlayClick = { audioPlayer.play(state.fileUri) },
                                         onReRecordClick = {
                                             // Go back to home to re-record
@@ -324,6 +343,68 @@ class MainActivity : ComponentActivity() {
                                             permissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
                                         }
                                     )
+                                }
+                            }
+                            composable("detecting") {
+                                val state = appState
+                                if (state is AppState.Detecting) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Black)
+                                            .padding(16.dp)
+                                    ) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            CircularProgressIndicator(color = Color.White)
+                                            Spacer(Modifier.height(16.dp))
+                                            Text(
+                                                text = "Detecting emotion in\n${state.fileName}...",
+                                                color = Color.White,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            composable("failure") {
+                                val state = appState
+                                if (state is AppState.Failure) {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Black) // Ensure background is black
+                                            .padding(16.dp)
+                                    ) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            // Use a visible error icon
+                                            Icon(
+                                                Icons.Default.ErrorOutline,
+                                                contentDescription = "Error",
+                                                tint = MaterialTheme.colorScheme.error,
+                                                modifier = Modifier.size(48.dp)
+                                            )
+                                            Spacer(Modifier.height(16.dp))
+                                            Text(
+                                                text = state.message,
+                                                color = MaterialTheme.colorScheme.error, // Use theme color
+                                                textAlign = TextAlign.Center,
+                                                style = MaterialTheme.typography.bodyLarge // Make it readable
+                                            )
+                                            Spacer(Modifier.height(24.dp))
+                                            Button(onClick = {
+                                                // Navigate home cleanly
+                                                navController.navigate("home") {
+                                                    popUpTo(navController.graph.findStartDestination().id) {
+                                                        inclusive = true
+                                                    }
+                                                }
+                                            }) {
+                                                Text("Return Home")
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -345,13 +426,54 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable("live") {
-                                LiveFeedbackScreen(
-                                    navController = navController,
-                                    viewModel = audioViewModel
+                                LiveRecordingScreen(
+                                    viewModel = audioViewModel,
+                                    onStop = {
+                                        // This logic is now simpler. We let the summary screen handle the file.
+                                        audioViewModel.stopRecording()
+                                        val summary = audioViewModel.emotionHistory.value
+                                        appState = AppState.SessionSummary(summary)
+                                        navController.navigate("summary") {
+                                            popUpTo("live") { inclusive = true }
+                                        }
+                                    }
                                 )
                             }
+                            composable("summary") {
+                                val state = appState
+                                val sessionFile = remember { audioViewModel.getSessionFile() }
+                                if (state is AppState.SessionSummary) {
+                                    SessionSummaryScreen(
+                                        emotions = state.emotions,
+                                        file = sessionFile,
+                                        onReturnHome = {
+                                            navController.navigate("home") {
+                                                popUpTo(navController.graph.findStartDestination().id) { inclusive = true }
+                                            }
+                                        },
+                                        onReplay = {
+                                            sessionFile?.let { audioPlayer.play(Uri.fromFile(it)) }
+                                        },
+                                        // Add a save function here
+                                        onSaveSession = { primaryEmotion, summary, averageVector, file ->
+                                            saveHistoryItem( // Assuming you have a saveHistoryItem function
+                                                finalEmotion = primaryEmotion,
+                                                detectedEmotion = summary,
+                                                vector = averageVector,
+                                                type = HistoryItemType.SESSION,
+                                                fileToSave = file
+                                            )
+                                        }
+                                    )
+                                }
+                            }
                             composable("history") {
-                                HistoryScreen(historyItems, { path -> audioPlayer.play(Uri.fromFile(File(path))) }, { navController.popBackStack() })
+                                HistoryScreen(
+                                    historyItems = historyItems,
+                                    onPlayItem = { path -> audioPlayer.play(Uri.fromFile(File(path))) },
+                                    onNavigateUp = { navController.popBackStack() },
+                                    onRenameItem = { id, newTitle -> updateHistoryItemTitle(id, newTitle) } // <<< PASS THE FUNCTION
+                                )
                             }
                             composable("catalog") {
                                 EmotionCatalogScreen { navController.popBackStack() }
@@ -393,6 +515,18 @@ class MainActivity : ComponentActivity() {
             onFailure(e.message ?: "An unknown error occurred during detection.")
         }
     }
+    private fun updateHistoryItemTitle(itemId: String, newTitle: String) {
+        // Find the item, create a copy with the new title, and update the list
+        val updatedList = _history.value.map {
+            if (it.id == itemId) {
+                it.copy(title = newTitle)
+            } else {
+                it
+            }
+        }
+        _history.value = updatedList
+        Log.d(TAG, "Updated title for item $itemId to '$newTitle'")
+    }
 
     private fun decodeAudioFileToPcmShortArray(uri: Uri, contentResolver: android.content.ContentResolver): ShortArray? {
         val extractor = MediaExtractor(); var decoder: MediaCodec? = null; var pfd: android.os.ParcelFileDescriptor? = null
@@ -425,16 +559,37 @@ class MainActivity : ComponentActivity() {
         finally { try { pfd?.close(); extractor.release(); decoder?.stop(); decoder?.release() } catch (e: Exception) {} }
     }
 
-    private fun saveHistoryItem(finalEmotion: String, detectedEmotion: String, vector: EmotionVector) {
-        val sourceFile = currentRecordingFile ?: run { Log.e(TAG, "saveHistoryItem: currentRecordingFile is null!"); return }
+    private fun saveHistoryItem(
+        finalEmotion: String,
+        detectedEmotion: String,
+        vector: EmotionVector,
+        type: HistoryItemType = HistoryItemType.CLIP,
+        fileToSave: File? = null // <-- Add this new parameter
+    ) {
+        val sourceFile = fileToSave ?: currentRecordingFile ?: run {
+            Log.e(TAG, "saveHistoryItem: No file provided to save!")
+            return
+        }
+
         val historyDir = File(filesDir, "history").apply { if (!exists()) mkdirs() }
         val destinationFile = File(historyDir, sourceFile.name)
         sourceFile.copyTo(destinationFile, overwrite = true)
-        _history.value = _history.value + HistoryItem(permanentPath = destinationFile.absolutePath, userConfirmedEmotion = finalEmotion, detectedEmotion = detectedEmotion, vector = vector)
-        Log.d(TAG, "History item saved: ${destinationFile.absolutePath}")
-        sourceFile.delete(); currentRecordingFile = null; tempAudioFile = null
-    }
 
+        _history.value = _history.value + HistoryItem(
+            title = sourceFile.name, // <<< USE THE FILENAME AS THE INITIAL TITLE
+            permanentPath = destinationFile.absolutePath,
+            userConfirmedEmotion = finalEmotion,
+            detectedEmotion = detectedEmotion,
+            vector = vector,
+            type = type
+        )
+        Log.d(TAG, "History item saved: ${destinationFile.absolutePath}")
+        sourceFile.delete()
+        if (type == HistoryItemType.CLIP) {
+            currentRecordingFile = null
+            tempAudioFile = null
+        }
+    }
     private fun preprocessAudioForModel(shortArray: ShortArray): FloatArray {
         // DO NOT pad or truncate here. The model expects the raw audio signal.
         // This was the source of the "Neutral" bug.
@@ -445,43 +600,27 @@ class MainActivity : ComponentActivity() {
     //endregion
 
     //region UI Composables
-    @Composable
-    fun MainContent(
-        appState: AppState,
-        onStateChange: (AppState) -> Unit,
-        onRecord: () -> Unit,
-        onStopRecord: () -> Unit,
-        onPlay: (Uri) -> Unit,
-        onSave: (String, String, EmotionVector) -> Unit,
-        onOpenFile: () -> Unit,
-        onLiveClick: () -> Unit
-    ) {
-        AnimatedContent(targetState = appState, label = "MainContentAnimation") { state ->
-            Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
-                when (state) {
-                    is AppState.Idle -> WelcomeScreen(onRecordAudioClick = onRecord, onOpenFileClick = onOpenFile, onLiveFeedbackClick = onLiveClick)
-                    is AppState.Recording -> { val amp by clipRecorder.amplitude.collectAsState(); RecordingScreen(amp, onStopRecord) }
-                    is AppState.SessionSummary -> SessionSummaryScreen(state.emotions) { onStateChange(AppState.Idle) }
-                    is AppState.PostRecordingReview -> PostRecordingScreen(state, { _, uri -> onStateChange(AppState.Detecting(state.fileName, uri)) }, { onPlay(state.fileUri) }, onRecord)
-                    is AppState.Detecting -> Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(16.dp)) { Column(horizontalAlignment = Alignment.CenterHorizontally) { CircularProgressIndicator(color = Color.White); Spacer(Modifier.height(16.dp)); Text("Detecting emotion in ${state.fileName}...", color = Color.White, textAlign = TextAlign.Center) } }
-                    is AppState.Success -> Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) { Text("Ready to analyze:", color = Color.White, style = MaterialTheme.typography.titleMedium); Text(state.fileName, color = Color.White, fontWeight = FontWeight.Bold); Spacer(Modifier.height(16.dp)); Row { Button(onClick = { onStateChange(AppState.Detecting(state.fileName, state.fileUri)) }) { Text("Detect Emotion") }; Spacer(Modifier.width(16.dp)); Button(onClick = { onPlay(state.fileUri) }) { Text("Replay") } } }
-                    is AppState.DetectionSuccess -> EmotionResult(vector = state.result, onSaveAndExit = { finalEmotion, detectedEmotion, vector -> onSave(finalEmotion, detectedEmotion, vector) })
-                    is AppState.Failure -> Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(16.dp)) { Column(horizontalAlignment = Alignment.CenterHorizontally) { Text(text = state.message, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center); Spacer(Modifier.height(16.dp)); Button(onClick = { onStateChange(AppState.Idle) }) { Text("Return Home") } } }
-                }
-            }
-        }
-    }
 
     @Composable
     fun WelcomeScreen(onRecordAudioClick: () -> Unit, onOpenFileClick: () -> Unit, onLiveFeedbackClick: () -> Unit) {
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
             Spacer(modifier = Modifier.weight(0.8f)); WelcomeSection(); Spacer(modifier = Modifier.weight(1f))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                 OutlinedButton(onClick = onLiveFeedbackClick, modifier = Modifier.height(80.dp)) { Column(horizontalAlignment = Alignment.CenterHorizontally) { Icon(Icons.Outlined.Analytics, "Live Feedback"); Text("Live") } }
                 val infiniteTransition = rememberInfiniteTransition(label = "Breathing"); val scale by infiniteTransition.animateFloat(1f, 1.1f, infiniteRepeatable(tween(1500), RepeatMode.Reverse), label = "scale")
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    IconButton(onClick = onRecordAudioClick, modifier = Modifier.size(72.dp).graphicsLayer { scaleX = scale; scaleY = scale; shadowElevation = 8.dp.toPx() }) {
-                        Box(modifier = Modifier.fillMaxSize().clip(CircleShape).background(MaterialTheme.colorScheme.primary), contentAlignment = Alignment.Center) { Icon(Icons.Default.Mic, "Record Audio", modifier = Modifier.size(36.dp), tint = MaterialTheme.colorScheme.onPrimary) }
+                    IconButton(onClick = onRecordAudioClick, modifier = Modifier
+                        .size(72.dp)
+                        .graphicsLayer {
+                            scaleX = scale; scaleY = scale; shadowElevation = 8.dp.toPx()
+                        }) {
+                        Box(modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary), contentAlignment = Alignment.Center) { Icon(Icons.Default.Mic, "Record Audio", modifier = Modifier.size(36.dp), tint = MaterialTheme.colorScheme.onPrimary) }
                     }
                     Text("Record Clip", style = MaterialTheme.typography.bodyMedium, color = Color.White)
                 }
@@ -493,7 +632,9 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun SessionSummaryScreen(emotions: List<MappedEmotion>, onReturnHome: () -> Unit) {
         val summary = emotions.groupingBy { it.label }.eachCount()
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text("Session Summary", style = MaterialTheme.typography.headlineMedium, color = Color.White)
             Spacer(Modifier.height(16.dp))
             if (summary.isEmpty()) {
@@ -521,14 +662,21 @@ class MainActivity : ComponentActivity() {
         val amplitudes = remember { mutableStateListOf<Float>() }; LaunchedEffect(amplitude) { amplitudes.add((amplitude * 4.0f).coerceIn(0f, 1f)); if (amplitudes.size > 150) amplitudes.removeAt(0) }
         Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Spacer(modifier = Modifier.weight(1f)); Text("Recording...", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = Color.White); Spacer(modifier = Modifier.height(16.dp))
-            ScrollingWaveform(amplitudes, Modifier.fillMaxWidth().height(100.dp).padding(horizontal = 16.dp)); Spacer(modifier = Modifier.weight(1f))
-            IconButton(onClick = onStopRecording, modifier = Modifier.size(72.dp).padding(bottom = 32.dp)) { Icon(Icons.Default.Stop, "Stop Recording", tint = Color.Red, modifier = Modifier.fillMaxSize()) }
+            ScrollingWaveform(amplitudes, Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .padding(horizontal = 16.dp)); Spacer(modifier = Modifier.weight(1f))
+            IconButton(onClick = onStopRecording, modifier = Modifier
+                .size(72.dp)
+                .padding(bottom = 32.dp)) { Icon(Icons.Default.Stop, "Stop Recording", tint = Color.Red, modifier = Modifier.fillMaxSize()) }
         }
     }
 
     @Composable
     fun PostRecordingScreen(appState: AppState.PostRecordingReview, onDetectClick: (String, Uri) -> Unit, onPlayClick: () -> Unit, onReRecordClick: () -> Unit) {
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)) {
             Text("Recording Complete", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White); Text(appState.fileName, color = Color.LightGray); Spacer(modifier = Modifier.height(16.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
                 Button(onClick = onPlayClick) { Icon(Icons.Default.PlayArrow, "Play"); Spacer(Modifier.width(8.dp)); Text("Replay") }
@@ -550,7 +698,9 @@ class MainActivity : ComponentActivity() {
         var isDropdownExpanded by remember { mutableStateOf(false) }
         val keyboardController = LocalSoftwareKeyboardController.current
 
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Text(mappedEmotion.label, fontSize = 48.sp, fontWeight = FontWeight.Bold, color = mappedEmotion.color, textAlign = TextAlign.Center)
             Spacer(Modifier.height(4.dp))
             Text("Description: ${mappedEmotion.description}", fontSize=16.sp, color = Color.White, textAlign = TextAlign.Center)
@@ -569,7 +719,9 @@ class MainActivity : ComponentActivity() {
                     onValueChange = {},
                     label = { Text("Selected Emotion") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isDropdownExpanded && !showCustomField) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
                 )
                 ExposedDropdownMenu(expanded = isDropdownExpanded && !showCustomField, onDismissRequest = { isDropdownExpanded = false }) {
                     synonyms.forEach { synonym ->
@@ -592,14 +744,19 @@ class MainActivity : ComponentActivity() {
                         value = customEmotionText,
                         onValueChange = { customEmotionText = it.filter { c -> c != '\n' } },
                         label = { Text("Search or add new emotion") },
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = { keyboardController?.hide() })
                     )
                     LazyColumn(modifier = Modifier.heightIn(max = 150.dp)) {
                         items(searchSuggestions) { suggestion ->
-                            Text(suggestion, modifier = Modifier.fillMaxWidth().clickable { customEmotionText = suggestion }.padding(12.dp))
+                            Text(suggestion, modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { customEmotionText = suggestion }
+                                .padding(12.dp))
                         }
                     }
                 }
@@ -612,34 +769,127 @@ class MainActivity : ComponentActivity() {
                     onSaveAndExit(finalEmotion, mappedEmotion.label, vector)
                 },
                 enabled = if (showCustomField) customEmotionText.isNotBlank() else true,
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
             ) { Text("Accept & Save") }
         }
     }
+// In MainActivity.kt, replace the entire HistoryScreen function
 
     @Composable
-    fun HistoryScreen(historyItems: List<HistoryItem>, onPlayItem: (path: String) -> Unit, onNavigateUp: () -> Unit) {
+    fun HistoryScreen(
+        historyItems: List<HistoryItem>,onPlayItem: (path: String) -> Unit,
+        onNavigateUp: () -> Unit,
+        onRenameItem: (id: String, newTitle: String) -> Unit // <<< This is the correct signature
+    ) {
+        // State for managing which item's rename dialog is open.
+        // This needs to be at the top level of the screen composable.
+        var showRenameDialogFor by remember { mutableStateOf<HistoryItem?>(null) }
+
         if (historyItems.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No recordings saved yet.", style = MaterialTheme.typography.bodyLarge, color = Color.White) }
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "No recordings saved yet.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White
+                )
+            }
         } else {
+            // The LazyColumn displays the items
             LazyColumn(contentPadding = PaddingValues(16.dp)) {
-                item { Text("Session History", style = MaterialTheme.typography.headlineMedium, color = Color.White, modifier = Modifier.padding(bottom = 8.dp)) }
+                item {
+                    Text(
+                        "Session History",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = Color.White,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 items(historyItems.sortedByDescending { it.timestamp }) { item ->
                     ElevatedCard(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            val icon = if (item.type == HistoryItemType.CLIP) Icons.Default.Mic else Icons.Default.Podcasts
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = item.type.name,
+                                modifier = Modifier.padding(end = 16.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("True Emotion: ${item.userConfirmedEmotion}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text("Detected: ${item.detectedEmotion}", style = MaterialTheme.typography.titleSmall, fontStyle = FontStyle.Italic, color = createMappedEmotion(item.detectedEmotion).color)
-                                Text("V: ${"%.2f".format(item.vector.valence)}, A: ${"%.2f".format(item.vector.arousal)}, D: ${"%.2f".format(item.vector.dominance)}", style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, color = Color.Gray)
-                                Text(SimpleDateFormat("MMM dd, yyyy, hh:mm a", Locale.getDefault()).format(Date(item.timestamp)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                // Display the title
+                                Text(
+                                    text = item.title,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1
+                                )
+                                // Your existing logic for clip vs session display
+                                if (item.type == HistoryItemType.CLIP) {
+                                    Text("True Emotion: ${item.userConfirmedEmotion}", style = MaterialTheme.typography.bodyLarge)
+                                    Text("Detected: ${item.detectedEmotion}", style = MaterialTheme.typography.titleSmall, fontStyle = FontStyle.Italic, color = createMappedEmotion(item.detectedEmotion).color)
+                                } else {
+                                    Text("Primary Emotion: ${item.userConfirmedEmotion}", style = MaterialTheme.typography.bodyLarge, color = createMappedEmotion(item.userConfirmedEmotion).color)
+                                }
+                                Text(
+                                    SimpleDateFormat("MMM dd, yyyy, hh:mm a", Locale.getDefault()).format(Date(item.timestamp)),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
-                            IconButton(onClick = { onPlayItem(item.permanentPath) }) { Icon(Icons.Default.PlayArrow, "Play Recording", modifier = Modifier.size(36.dp)) }
+                            // Rename Icon
+                            IconButton(onClick = { showRenameDialogFor = item }) {
+                                Icon(Icons.Default.Edit, "Rename Recording", tint = Color.Gray)
+                            }
+                            // Play Icon
+                            IconButton(onClick = { onPlayItem(item.permanentPath) }) {
+                                Icon(Icons.Default.PlayArrow, "Play Recording", modifier = Modifier.size(36.dp))
+                            }
                         }
                     }
                 }
             }
+
+            // The AlertDialog is now correctly placed at the end of the screen's content.
+            // It observes the 'showRenameDialogFor' state.
+            showRenameDialogFor?.let { itemToRename ->
+                var newName by remember { mutableStateOf(itemToRename.title) }
+                AlertDialog(
+                    onDismissRequest = { showRenameDialogFor = null },
+                    title = { Text("Rename Recording") },
+                    text = {
+                        OutlinedTextField(
+                            value = newName,
+                            onValueChange = { newName = it },
+                            label = { Text("New Name") },
+                            singleLine = true
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                if (newName.isNotBlank()) {
+                                    onRenameItem(itemToRename.id, newName.trim())
+                                }
+                                showRenameDialogFor = null
+                            },
+                            enabled = newName.isNotBlank()
+                        ) { Text("Save") }
+                    },
+                    dismissButton = {
+                        Button(onClick = { showRenameDialogFor = null }) { Text("Cancel") }
+                    }
+                )
+            }
         }
     }
+
 
     @Composable
     fun EmotionCatalogScreen(onNavigateUp: () -> Unit) {
@@ -670,13 +920,134 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
+    fun LiveRecordingScreen(viewModel: AudioViewModel, onStop: () -> Unit) {
+        // Collect the necessary states from the ViewModel
+        val amplitudes by viewModel.amplitudeFlow.collectAsState()
+        val latestEmotion by viewModel.latestEmotion.collectAsState()
+
+        val statusText = latestEmotion?.label ?: "Listening..."
+        val statusColor = latestEmotion?.let { createMappedEmotion(it.label).color } ?: Color.White
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Animated text for the emotion
+            AnimatedContent(
+                targetState = Pair(statusText, statusColor),
+                label = "StatusTextAnimation"
+            ) { (text, color) ->
+                Text(
+                    text = text,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = color,
+                    textAlign = TextAlign.Center
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Your existing waveform looks great for this
+            ScrollingWaveform(
+                amplitudes = amplitudes,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.weight(0.8f))
+
+            // Stop Button
+            IconButton(
+                onClick = onStop,
+                modifier = Modifier
+                    .size(72.dp)
+                    .padding(bottom = 32.dp)
+            ) {
+                Icon(
+                    Icons.Default.Stop,
+                    contentDescription = "Stop Recording",
+                    tint = Color.Red,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+            Spacer(modifier = Modifier.weight(0.2f))
+        }
+    }
+
+    // This is the new SessionSummaryScreen you already had, but we'll add saving
+    @Composable
+    fun SessionSummaryScreen(
+        emotions: List<MappedEmotion>,
+        file: File?,
+        onReturnHome: () -> Unit,
+        onReplay: () -> Unit,
+        onSaveSession: (primaryEmotion: String, summary: String, averageVector: EmotionVector, file: File?) -> Unit
+    ) {
+        val summary = emotions.groupingBy { it.label }.eachCount()
+        val totalEmotions = emotions.size.toFloat().coerceAtLeast(1f)
+        val primaryEmotion = summary.maxByOrNull { it.value }?.key ?: "Neutral"
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Session Summary", style = MaterialTheme.typography.headlineMedium, color = Color.White)
+            Text("Primary Emotion: $primaryEmotion", style = MaterialTheme.typography.titleLarge, color = createMappedEmotion(primaryEmotion).color)
+            Spacer(Modifier.height(16.dp))
+
+            if (summary.isEmpty()) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    Text("No emotions were detected during the session.", color = Color.White, textAlign = TextAlign.Center)
+                }
+            } else {
+                LazyColumn(modifier = Modifier.weight(1f)) {
+                    items(summary.entries.toList().sortedByDescending { it.value }) { (label, count) ->
+                        val percentage = (count / totalEmotions) * 100
+                        val emotion = createMappedEmotion(label)
+                        Row(
+                            modifier = Modifier.padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(label, color = emotion.color, style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
+                            Text("${"%.1f".format(percentage)}%", color = Color.White, style = MaterialTheme.typography.titleLarge)
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                // New "Replay" button
+                Button(onClick = onReplay) { Text("Replay") }
+                Button(onClick = onReturnHome) { Text("Discard") }
+                Button(onClick = {
+                    val summaryString = summary.keys.joinToString(", ")
+                    val avgVector = EmotionVector(0f, 0f, 0f) // Placeholder
+                    onSaveSession(primaryEmotion, summaryString, avgVector, file) // Pass the file here
+                    onReturnHome()
+                }) { Text("Save & Exit") }
+            }
+        }
+    }
+
+    @Composable
     fun WelcomeSection() {
         val provider = remember { GoogleFont.Provider("com.google.android.gms.fonts", "com.google.android.gms", EMPTY_CERTIFICATES) }
         val fontFamily = remember { FontFamily(Font(GoogleFont("Montserrat"), provider)) }
         var visible by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) { visible = true }
         AnimatedVisibility(visible, enter = slideInVertically { it / 2 } + fadeIn()) {
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("SER", fontFamily = fontFamily, fontWeight = FontWeight.Bold, fontSize = 80.sp, color = Color.White)
                 Text("Speech Emotion Recognition", fontFamily = fontFamily, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary, letterSpacing = 2.sp, modifier = Modifier.padding(bottom = 24.dp))
                 Text("For best results, express one clear emotion. Clips should be 2-6 seconds. Live feedback can be longer. SER can make mistakes, your confirmation helps!", textAlign = TextAlign.Center, fontFamily = fontFamily, color = Color.White.copy(alpha = 0.8f), lineHeight = 24.sp, style = MaterialTheme.typography.bodyLarge)
