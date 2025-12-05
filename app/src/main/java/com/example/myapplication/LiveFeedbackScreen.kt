@@ -1,155 +1,107 @@
-// Path: app/src/main/java/com/example/myapplication/LiveFeedbackScreen.kt
+// In file: app/src/main/java/com/example/myapplication/LiveFeedbackScreen.kt
+
 package com.example.myapplication
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavController
 
+// This is the new, correct version of your LiveFeedbackScreen.
+// It is now called from MainActivity's NavHost.
 @Composable
-fun LiveFeedbackScreen(navController: NavController, viewModel: AudioViewModel) {
-    val isRecording by viewModel.isRecording.collectAsState()
-    val liveEmotion by viewModel.liveEmotion.collectAsState()
-    val audioAmplitudes by viewModel.audioAmplitudes.collectAsState()
-
-    // State to manage the save dialog
-    var showSaveDialog by remember { mutableStateOf(false) }
-
-    // This will trigger the live processing start/stop
-    // We use LaunchedEffect to start/stop when the button is pressed
-    // This is a placeholder for the real implementation
-    if (isRecording) {
-        // TODO: This is where we would call viewModel.startLiveProcessing()
-        // and have it continuously update liveEmotion and audioAmplitudes
+fun LiveRecordingScreen(
+    processor: LiveAudioProcessor,
+    onStop: () -> Unit
+) {
+    // This effect starts the processor when the screen appears
+    LaunchedEffect(Unit) {
+        processor.startRecording()
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+    // Collect the states from the new processor
+    val amplitudes by processor.amplitudeFlow.collectAsState()
+    val latestEmotion by processor.latestEmotion.collectAsState()
+
+    val statusText = latestEmotion?.label ?: "Listening..."
+    val statusColor = latestEmotion?.color ?: Color.White
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    // Display the live emotion label, or "..." for pauses, or a default message
-                    text = if (isRecording) liveEmotion?.label ?: "..." else "Press Record for Live Feedback",
-                    fontSize = 32.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.height(80.dp) // Give it space to avoid layout shifts
-                )
-                Text(
-                    text = if (isRecording) liveEmotion?.description ?: "Listening..." else "The emotion will update in real-time.",
-                    fontSize = 16.sp,
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
-            }
+        Spacer(modifier = Modifier.weight(1f))
 
-            AudioWaveform(amplitudes = audioAmplitudes)
-
-            Button(
-                onClick = {
-                    if (isRecording) {
-                        viewModel.stopLiveProcessing()
-                        showSaveDialog = true // Show dialog when stopping
-                    } else {
-                        viewModel.startLiveProcessing()
-                    }
-                },
-                modifier = Modifier.size(100.dp)
-            ) {
-                Icon(
-                    imageVector = if (isRecording) Icons.Default.Stop else Icons.Default.Mic,
-                    contentDescription = if (isRecording) "Stop Recording" else "Start Live Recording",
-                    modifier = Modifier.size(48.dp)
-                )
-            }
+        AnimatedContent(
+            targetState = Pair(statusText, statusColor),
+            label = "StatusTextAnimation"
+        ) { (text, color) ->
+            Text(
+                text = text,
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                color = color,
+                textAlign = TextAlign.Center
+            )
         }
-    }
+        Spacer(modifier = Modifier.height(16.dp))
 
-    if (showSaveDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showSaveDialog = false
-                navController.popBackStack() // Go back to main screen
-            },
-            title = { Text("Save Results?") },
-            text = { Text("Do you want to save the emotion log from this session?") },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        // TODO: Implement save logic
-                        showSaveDialog = false
-                        navController.popBackStack()
-                    }
-                ) {
-                    Text("Save")
-                }
-            },
-            dismissButton = {
-                Button(
-                    onClick = {
-                        showSaveDialog = false
-                        navController.popBackStack()
-                    }
-                ) {
-                    Text("Discard")
-                }
-            }
+        // Use the ScrollingWaveform from MainActivity
+        ScrollingWaveform(
+            amplitudes = amplitudes,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .padding(horizontal = 16.dp)
         )
+        Spacer(modifier = Modifier.weight(0.8f))
+
+        IconButton(
+            onClick = onStop,
+            modifier = Modifier
+                .size(72.dp)
+                .padding(bottom = 32.dp)
+        ) {
+            Icon(
+                Icons.Default.Stop,
+                contentDescription = "Stop Recording",
+                tint = Color.Red,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+        Spacer(modifier = Modifier.weight(0.2f))
     }
 }
 
 @Composable
-fun AudioWaveform(
-    amplitudes: List<Float>,
-    modifier: Modifier = Modifier,
-    strokeWidth: Float = 4f,
-    strokeColor: Color = Color.Gray
-) {
-    Canvas(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(100.dp) // You can adjust the height as needed
-    ) {
-        val centerY = size.height / 2
-        val xSpacing = if (amplitudes.isNotEmpty()) size.width / amplitudes.size else 0f
-
+fun ScrollingWaveform(amplitudes: List<Float>, modifier: Modifier = Modifier, waveColor: Color = MaterialTheme.colorScheme.primary) {
+    Canvas(modifier = modifier) {
+        val canvasWidth = size.width; val canvasHeight = size.height; val middleY = canvasHeight / 2
+        val barWidth = if (amplitudes.isNotEmpty()) canvasWidth / amplitudes.size else 0f
         amplitudes.forEachIndexed { index, amplitude ->
-            val x = (index + 1) * xSpacing
-            // We normalize the amplitude to be between 0 and 1,
-            // then multiply by the available height.
-            val lineHeight = amplitude * size.height
-            drawLine(
-                color = strokeColor,
-                start = Offset(x, centerY - lineHeight / 2),
-                end = Offset(x, centerY + lineHeight / 2),
-                strokeWidth = strokeWidth,
-                cap = StrokeCap.Round
-            )
+            val x = index * barWidth; val barHeight = amplitude * canvasHeight
+            drawLine(color = waveColor, start = Offset(x, middleY - barHeight / 2), end = Offset(x, middleY + barHeight / 2), strokeWidth = 4f)
         }
     }
 }

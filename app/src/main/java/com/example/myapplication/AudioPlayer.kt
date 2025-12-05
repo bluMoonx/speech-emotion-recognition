@@ -10,15 +10,32 @@ class AudioPlayer(private val context: Context) {
     private var player: MediaPlayer? = null
 
     fun play(uri: Uri) {
-        stop() // Stop any previous playback
-        player = MediaPlayer.create(context, uri).apply {
-            start()
+        // Stop and release any previous player instance
+        stop()
+
+        player = MediaPlayer().apply {
+            try {
+                setDataSource(context, uri)
+                prepare()
+                start()
+                setOnCompletionListener {
+                    // Release resources when playback is complete
+                    stop()
+                }
+            } catch (e: Exception) {
+                stop() // Clean up on failure too
+            }
         }
     }
 
+    // --- ADD THIS FUNCTION ---
     fun stop() {
-        player?.stop()
-        player?.release()
+        player?.let {
+            if (it.isPlaying) {
+                it.stop()
+            }
+            it.release()
+        }
         player = null
     }
 }

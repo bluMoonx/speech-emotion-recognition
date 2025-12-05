@@ -53,14 +53,15 @@ data class MappedEmotion(
  * - Uses Dominance as a final tie-breaker for high-arousal negative emotions (Anger vs. Fear).
  */
 val emotionSynonyms = mapOf(
-    "Joy" to listOf("Happy", "Elated", "Excited", "Cheerful", "Triumphant", "Pleased"),
-    "Anger" to listOf("Furious", "Irritated", "Annoyed", "Frustrated", "Enraged"),
-    "Sadness" to listOf("Depressed", "Gloomy", "Mournful", "Bored", "Disappointed"),
-    "Fear" to listOf("Anxious", "Scared", "Terrified", "Uneasy", "Nervous", "Desperate"),
-    "Disgust" to listOf("Grossed Out", "Repulsed", "Irritated", "Annoyed", "Contempt"),
-    "Surprise" to listOf("Shocked", "Startled", "Amazed", "Astonished"),
-    "Neutral" to listOf("Calm", "Inquisitive", "Indifferent", "Relaxed")
+    "Joy" to listOf("Happy", "Elated", "Ecstatic", "Relieved", "Excited", "Delighted", "Astonished", "Surprised", "Cheerful", "Grateful", "Triumphant", "Hopeful", "Energetic", "Pleased", "Content", "Optimistic", "Amused", "Humorous", "Inspired", "Powerful", "Brave", "Confident", "Love"),
+    "Anger" to listOf("Furious", "Hurt", "Irritated", "Annoyed", "Frustrated", "Enraged", "Shocked", "Disgusted", "Afraid", "Insistent", "Stressed", "Critical", "Offended", "Hostile"),
+    "Sadness" to listOf("Upset", "Disappointed", "Depressed", "Gloomy", "Mournful", "Bored", "Quiet", "Miserable", "Guilty", "Drained", "Hurt", "Hopeless", "Helpless"),
+    "Fear" to listOf("Worried", "Anxious", "Scared", "Terrified", "Uneasy", "Nervous", "Desperate", "Shocked", "Helpless", "Miserable", "Hopeless", "Hurt", "Surprised", "Tense", "Stressed"),
+    "Disgust" to listOf("Grossed Out", "Bored", "Unamused", "Dissatisfied", "Shocked", "Mortified", "Disappointed", "Repulsed", "Irritated", "Annoyed", "Contempt", "Offended", "Critical", "Mean", "Humorous", "Confused"),
+    "Surprise" to listOf("Shocked", "Startled", "Disgusted", "Happy", "Ecstatic", "Delighted", "Amazed", "Astonished", "Enraged", "Stressed", "Elated", "Energetic", "Alarmed", "Mortified"),
+    "Neutral" to listOf("Calm", "Worried", "Concerned", "Inquisitive", "Indifferent", "Serene", "Contemplative", "Relieved", "Relaxed", "Safe", "Reflective", "Grateful", "Balanced", "Confused", "Pleased", "Intelligent", "Engaged", "Apathetic", "Bored", "Sleepy", "Unamused" )
 )
+
 fun mapVectorToEmotion(vector: EmotionVector): MappedEmotion {
     val (arousal, valence, dominance) = vector
     Log.d("EmotionMapper", "INPUT  -> V: $valence, A: $arousal, D: $dominance")
