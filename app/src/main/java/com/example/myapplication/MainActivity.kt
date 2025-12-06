@@ -915,11 +915,14 @@ class MainActivity : ComponentActivity() {
                                         IconButton(onClick = { expandedItem = if (expandedItem?.id == item.id) null else item }) {
                                             Icon(if (expandedItem?.id == item.id) Icons.Default.ExpandLess else Icons.Default.ExpandMore, "Expand")
                                         }
-                                    } else {
-                                        IconButton(onClick = { showRenameDialogFor = item }) {
-                                            Icon(Icons.Default.Edit, "Rename Recording", tint = Color.Gray)
-                                        }
                                     }
+
+// Show the rename icon for ALL item types
+                                    IconButton(onClick = { showRenameDialogFor = item }) {
+                                        Icon(Icons.Default.Edit, "Rename Item", tint = Color.Gray)
+                                    }
+
+// The play button remains the same for all items
                                     IconButton(onClick = { onPlayItem(item.permanentPath) }) {
                                         Icon(Icons.Default.PlayArrow, "Play Recording", modifier = Modifier.size(36.dp))
                                     }
