@@ -108,7 +108,7 @@ internal fun mapEmotionWithDecisionWeb(vector: EmotionVector): String {
             // *** THE FINAL FIX: A TOP-LEVEL SURPRISE GATE ***
             // Your Surprise data shows Arousal is consistently high (>0.66) while Valence is ambiguous (0.3-0.42).
             // This gate will catch these events FIRST, before they can be misclassified as Disgust or Fear.
-            if (arousal > 0.65f && valence in 0.32f..0.43f) {
+            if (arousal > 0.65f && valence in 0.39f..0.43f) {
                 return "Surprise"
             }
 

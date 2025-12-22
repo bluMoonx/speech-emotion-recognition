@@ -1,5 +1,4 @@
-// In file: app/src/main/java/com/example/myapplication/LiveFeedbackScreen.kt
-
+// In app/src/main/java/com/example/myapplication/LiveFeedbackScreen.kt
 package com.example.myapplication
 
 import androidx.compose.animation.AnimatedContent
@@ -25,8 +24,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// This is the new, correct version of your LiveFeedbackScreen.
-// It is now called from MainActivity's NavHost.
 @Composable
 fun LiveRecordingScreen(
     processor: LiveAudioProcessor,
@@ -37,7 +34,7 @@ fun LiveRecordingScreen(
         processor.startRecording()
     }
 
-    // Collect the states from the new processor
+    // Collect the states from the processor
     val amplitudes by processor.amplitudeFlow.collectAsState()
     val latestEmotion by processor.latestEmotion.collectAsState()
 
@@ -67,12 +64,12 @@ fun LiveRecordingScreen(
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Use the ScrollingWaveform from MainActivity
+        // Use the ScrollingWaveform
         ScrollingWaveform(
             amplitudes = amplitudes,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp)
+                .height(150.dp) // Taller
                 .padding(horizontal = 16.dp)
         )
         Spacer(modifier = Modifier.weight(0.8f))
@@ -95,13 +92,28 @@ fun LiveRecordingScreen(
 }
 
 @Composable
-fun ScrollingWaveform(amplitudes: List<Float>, modifier: Modifier = Modifier, waveColor: Color = MaterialTheme.colorScheme.primary) {
+fun ScrollingWaveform(
+    amplitudes: List<AmplitudePoint>, // Updated type
+    modifier: Modifier = Modifier
+) {
     Canvas(modifier = modifier) {
-        val canvasWidth = size.width; val canvasHeight = size.height; val middleY = canvasHeight / 2
+        val canvasWidth = size.width
+        val canvasHeight = size.height
+        val middleY = canvasHeight / 2
         val barWidth = if (amplitudes.isNotEmpty()) canvasWidth / amplitudes.size else 0f
-        amplitudes.forEachIndexed { index, amplitude ->
-            val x = index * barWidth; val barHeight = amplitude * canvasHeight
-            drawLine(color = waveColor, start = Offset(x, middleY - barHeight / 2), end = Offset(x, middleY + barHeight / 2), strokeWidth = 4f)
+
+        amplitudes.forEachIndexed { index, point ->
+            val x = index * barWidth
+            val barHeight = point.value * canvasHeight
+
+            drawLine(
+                color = point.color, // USE THE INDIVIDUAL COLOR
+                start = Offset(x, middleY - barHeight / 2),
+                end = Offset(x, middleY + barHeight / 2),
+                strokeWidth = barWidth * 0.8f
+            )
         }
     }
 }
+
+

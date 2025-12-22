@@ -44,6 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -98,6 +99,7 @@ data class HistoryItem(
     val userConfirmedEmotion: String,
     val detectedEmotion: String,
     val vector: EmotionVector,
+    val sessionMap: List<MappedEmotion> = emptyList(),
     val timestamp: Long = System.currentTimeMillis(),
     val type: HistoryItemType
 )
@@ -379,7 +381,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable("live") {
-                                LiveRecordingScreen(
+                                LiveRecordingScreen( // The function defined in LiveFeedbackScreen.kt
                                     processor = liveAudioProcessor,
                                     onStop = {
                                         liveAudioProcessor.stopRecording()
@@ -391,6 +393,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                             }
+
 
                             composable("summary") {
                                 DisposableEffect(Unit) { onDispose { audioPlayer.stop() } }
@@ -414,7 +417,8 @@ class MainActivity : ComponentActivity() {
                                                 detectedEmotion = summary,
                                                 vector = averageVector,
                                                 type = HistoryItemType.SESSION,
-                                                fileToSave = file
+                                                fileToSave = file,
+                                                sessionMap = state.emotions // FIX: Pass the session emotions here
                                             )
                                         }
                                     )
@@ -427,10 +431,12 @@ class MainActivity : ComponentActivity() {
                                 HistoryScreen(
                                     historyItems = historyItems,
                                     onPlayItem = { path -> audioPlayer.play(Uri.fromFile(File(path))) },
+                                    onStopPlayer = { audioPlayer.stop() }, // This will now match the signature below
                                     onNavigateUp = { navController.popBackStack() },
                                     onRenameItem = { id, newTitle -> updateHistoryItemTitle(id, newTitle) }
                                 )
                             }
+
 
                             composable("catalog") {
                                 EmotionCatalogScreen { navController.popBackStack() }
@@ -449,9 +455,18 @@ class MainActivity : ComponentActivity() {
 
     private fun isSpeechDetected(audioData: ShortArray, threshold: Float): Boolean {
         if (audioData.isEmpty()) return false
-        val rms = sqrt(audioData.map { it.toDouble() * it.toDouble() }.average())
-        return (rms / 32767.0f) > threshold
+
+        // Find the absolute highest point in this chunk (Peak)
+        val maxAbs = audioData.maxOfOrNull { Math.abs(it.toInt()) } ?: 0
+
+        // Scale it so that it's more sensitive (multiplied by 5 to match your visual boost)
+        val normalizedPeak = (maxAbs / 32767.0f) * 5f
+        val normalizedVolume = normalizedPeak.coerceIn(0f, 1f)
+
+        // Return true if the boosted volume is higher than the threshold
+        return normalizedVolume > threshold
     }
+
     private suspend fun detectEmotion(uri: Uri, onSuccess: (EmotionVector) -> Unit, onFailure: (String) -> Unit) {
         try {
             val shortArray = AudioDecoder.decodeAudioFileToPcmShortArray(this, uri)
@@ -545,34 +560,39 @@ class MainActivity : ComponentActivity() {
         detectedEmotion: String,
         vector: EmotionVector,
         type: HistoryItemType = HistoryItemType.CLIP,
-        fileToSave: File?
+        fileToSave: File?,
+        sessionMap: List<MappedEmotion> = emptyList() // Added parameter
     ) {
         val sourceFile = fileToSave ?: currentRecordingFile ?: run {
-            Log.e(TAG, "saveHistoryItem: No file provided to save!")
+            Log.e(TAG, "saveHistoryItem: No file provided!")
             return
         }
 
         val historyDir = File(filesDir, "history").apply { if (!exists()) mkdirs() }
         val destinationFile = File(historyDir, sourceFile.name)
         sourceFile.copyTo(destinationFile, overwrite = true)
-
+        val displayTitle = if (type == HistoryItemType.SESSION) {
+            "Live Session " + SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault()).format(Date())
+        } else {
+            sourceFile.name
+        }
         _history.value = _history.value + HistoryItem(
-            title = sourceFile.name,
+            title = displayTitle,
             permanentPath = destinationFile.absolutePath,
             userConfirmedEmotion = finalEmotion,
             detectedEmotion = detectedEmotion,
             vector = vector,
-            type = type
+            type = type,
+            sessionMap = sessionMap // Pass it here
         )
-        Log.d(TAG, "History item saved: ${destinationFile.absolutePath}")
-        if (sourceFile.path.contains(cacheDir.path)) {
-            sourceFile.delete()
-        }
+
+        if (sourceFile.path.contains(cacheDir.path)) sourceFile.delete()
         if (type == HistoryItemType.CLIP) {
             currentRecordingFile = null
             tempAudioFile = null
         }
     }
+
 
     private fun preprocessAudioForModel(shortArray: ShortArray): FloatArray {
         return FloatArray(shortArray.size) { i -> shortArray[i] / 32768.0f }
@@ -705,7 +725,7 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun RecordingScreen(amplitude: Float, onStopRecording: () -> Unit) {
-        val amplitudes = remember { mutableStateListOf<Float>() }
+        val amplitudes = remember { mutableStateListOf<Float>() } // This is a List<Float>
         LaunchedEffect(amplitude) {
             amplitudes.add((amplitude * 4.0f).coerceIn(0f, 1f))
             if (amplitudes.size > 150) amplitudes.removeAt(0)
@@ -720,10 +740,26 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.weight(1f))
             Text("Recording...", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = Color.White)
             Spacer(modifier = Modifier.height(16.dp))
-            ScrollingWaveform(amplitudes, Modifier
+
+            // FIX: Ensure this Canvas logic only expects Float, not AmplitudePoint
+            Canvas(modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
-                .padding(horizontal = 16.dp))
+                .padding(horizontal = 16.dp)) {
+                val spacing = size.width / 150f
+                val maxAmplitude = size.height / 2f
+                amplitudes.forEachIndexed { index, amp ->
+                    val x = index * spacing
+                    val y = maxAmplitude * amp
+                    drawLine(
+                        color = Color.White,
+                        start = Offset(x, maxAmplitude - y),
+                        end = Offset(x, maxAmplitude + y),
+                        strokeWidth = 2f
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.weight(1f))
             IconButton(onClick = onStopRecording, modifier = Modifier
                 .size(72.dp)
@@ -872,11 +908,13 @@ class MainActivity : ComponentActivity() {
     fun HistoryScreen(
         historyItems: List<HistoryItem>,
         onPlayItem: (path: String) -> Unit,
+        onStopPlayer: () -> Unit,
         onNavigateUp: () -> Unit,
         onRenameItem: (id: String, newTitle: String) -> Unit
     ) {
         var showRenameDialogFor by remember { mutableStateOf<HistoryItem?>(null) }
         var expandedItem by remember { mutableStateOf<HistoryItem?>(null) }
+        var currentlyPlayingId by remember { mutableStateOf<String?>(null) }
 
         Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
             if (historyItems.isEmpty()) {
@@ -893,6 +931,27 @@ class MainActivity : ComponentActivity() {
                             .fillMaxWidth()
                             .padding(vertical = 8.dp)) {
                             Column {
+                                if (item.type == HistoryItemType.SESSION && item.sessionMap.isNotEmpty()) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(20.dp) // Small strip
+                                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                                            .clip(CircleShape)
+                                            .background(Color.DarkGray.copy(alpha = 0.3f))
+                                    ) {
+                                        Canvas(modifier = Modifier.fillMaxSize()) {
+                                            val segmentWidth = size.width / item.sessionMap.size
+                                            item.sessionMap.forEachIndexed { index, emotion ->
+                                                drawRect(
+                                                    color = emotion.color,
+                                                    topLeft = Offset(index * segmentWidth, 0f),
+                                                    size = Size(segmentWidth + 1f, size.height)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
                                 Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                                     val icon = if (item.type == HistoryItemType.CLIP) Icons.Default.Mic else Icons.Default.Podcasts
                                     Icon(
@@ -907,7 +966,8 @@ class MainActivity : ComponentActivity() {
                                             Text("True Emotion: ${item.userConfirmedEmotion}", style = MaterialTheme.typography.bodyLarge)
                                             Text("Detected: ${item.detectedEmotion}", style = MaterialTheme.typography.titleSmall, fontStyle = FontStyle.Italic, color = createMappedEmotion(item.detectedEmotion).color)
                                         } else {
-                                            Text("Primary Emotion: ${item.userConfirmedEmotion}", style = MaterialTheme.typography.bodyLarge, color = createMappedEmotion(item.userConfirmedEmotion).color)
+                                            Text("Primary Emotion: ${item.userConfirmedEmotion}", style = MaterialTheme.typography.bodyMedium, color = createMappedEmotion(item.userConfirmedEmotion).color)
+                                            Spacer(Modifier.height(5.dp))
                                         }
                                         Text(SimpleDateFormat("MMM dd, yyyy, hh:mm a", Locale.getDefault()).format(Date(item.timestamp)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                     }
@@ -916,25 +976,62 @@ class MainActivity : ComponentActivity() {
                                             Icon(if (expandedItem?.id == item.id) Icons.Default.ExpandLess else Icons.Default.ExpandMore, "Expand")
                                         }
                                     }
+                                    IconButton(onClick = {
+                                        if (currentlyPlayingId == item.id) {
+                                            onStopPlayer()
+                                            currentlyPlayingId = null
+                                        } else {
+                                            onPlayItem(item.permanentPath)
+                                            currentlyPlayingId = item.id
+                                        }
+                                    }) {
+                                        Icon(
+                                            imageVector = if (currentlyPlayingId == item.id) Icons.Default.Pause else Icons.Default.PlayArrow,
+                                            contentDescription = if (currentlyPlayingId == item.id) "Stop" else "Play",
+                                            modifier = Modifier.size(36.dp)
+                                        )
+                                    }
 
 // Show the rename icon for ALL item types
                                     IconButton(onClick = { showRenameDialogFor = item }) {
                                         Icon(Icons.Default.Edit, "Rename Item", tint = Color.Gray)
-                                    }
-
-// The play button remains the same for all items
-                                    IconButton(onClick = { onPlayItem(item.permanentPath) }) {
-                                        Icon(Icons.Default.PlayArrow, "Play Recording", modifier = Modifier.size(36.dp))
                                     }
                                 }
 
                                 AnimatedVisibility(visible = expandedItem?.id == item.id && item.type == HistoryItemType.SESSION) {
                                     Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
                                         Divider(modifier = Modifier.padding(vertical = 8.dp))
-                                        Text("Session Breakdown:", style = MaterialTheme.typography.titleMedium)
-                                        val emotionCounts = item.detectedEmotion.split(", ").filter { it.isNotBlank() }
-                                        emotionCounts.forEach { label ->
-                                            Text("• $label", style = MaterialTheme.typography.bodyLarge, color = createMappedEmotion(label).color)
+                                        Text("Session Breakdown:", style = MaterialTheme.typography.titleMedium, color = Color.White)
+
+                                        // Calculate counts and percentages from the saved sessionMap
+                                        val totalEmotions = item.sessionMap.size.toFloat().coerceAtLeast(1f)
+                                        val emotionCounts = item.sessionMap.groupingBy { it.label }.eachCount()
+
+                                        // Sort: Most prominent to least
+                                        val sortedEmotions = emotionCounts.entries.sortedByDescending { it.value }
+
+                                        Column(modifier = Modifier.padding(top = 8.dp)) {
+                                            sortedEmotions.forEach { (label, count) ->
+                                                val percentage = (count / totalEmotions) * 100
+                                                Row(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(vertical = 2.dp),
+                                                    horizontalArrangement = Arrangement.SpaceBetween
+                                                ) {
+                                                    Text(
+                                                        text = "• $label",
+                                                        style = MaterialTheme.typography.bodyLarge,
+                                                        color = createMappedEmotion(label).color,
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+                                                    Text(
+                                                        text = "${"%.1f".format(percentage)}%",
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        color = Color.LightGray
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -961,6 +1058,12 @@ class MainActivity : ComponentActivity() {
                         dismissButton = { Button(onClick = { showRenameDialogFor = null }) { Text("Cancel") } }
                     )
                 }
+            }
+        }
+        DisposableEffect(Unit) {
+            onDispose {
+                onStopPlayer()
+                currentlyPlayingId = null
             }
         }
     }
@@ -995,7 +1098,13 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun WelcomeSection() {
-        val provider = remember { GoogleFont.Provider("com.google.android.gms.fonts", "com.google.android.gms", EMPTY_CERTIFICATES) }
+        val provider = remember {
+            GoogleFont.Provider(
+                "com.google.android.gms.fonts",
+                "com.google.android.gms",
+                EMPTY_CERTIFICATES
+            )
+        }
         val fontFamily = remember { FontFamily(Font(GoogleFont("Montserrat"), provider)) }
         var visible by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) { visible = true }
@@ -1006,11 +1115,32 @@ class MainActivity : ComponentActivity() {
                     .padding(horizontal = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("SER", fontFamily = fontFamily, fontWeight = FontWeight.Bold, fontSize = 80.sp, color = Color.White)
-                Text("Speech Emotion Recognition", fontFamily = fontFamily, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary, letterSpacing = 2.sp, modifier = Modifier.padding(bottom = 24.dp))
-                Text("For best results, express one clear emotion. Clips should be 2-6 seconds. Live feedback can be longer. SER can make mistakes, your confirmation helps!", textAlign = TextAlign.Center, fontFamily = fontFamily, color = Color.White.copy(alpha = 0.8f), lineHeight = 24.sp, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "SER",
+                    fontFamily = fontFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 80.sp,
+                    color = Color.White
+                )
+                Text(
+                    "Speech Emotion Recognition",
+                    fontFamily = fontFamily,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.primary,
+                    letterSpacing = 2.sp,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+                Text(
+                    "For best results, express one clear emotion. Clips should be 2-6 seconds. Live feedback can be longer. SER can make mistakes, your confirmation helps!",
+                    textAlign = TextAlign.Center,
+                    fontFamily = fontFamily,
+                    color = Color.White.copy(alpha = 0.8f),
+                    lineHeight = 24.sp,
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
+
     }
     //endregion
 }
