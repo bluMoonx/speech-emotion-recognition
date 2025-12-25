@@ -85,7 +85,7 @@ class LiveAudioProcessor(
             val amplitudes = mutableListOf<AmplitudePoint>()
             val fullRecording = mutableListOf<Short>()
             val inferenceAccumulator = mutableListOf<Short>()
-            val samplesNeeded = (sampleRate * 1.5).toInt()
+            val samplesNeeded = (sampleRate).toInt() // size of chunk recording UPDATE THIS TO CHANGE SENSITIVITY
 
             while (isRecording && isActive) {
                 val readSize = audioRecord?.read(audioData, 0, audioData.size) ?: 0

@@ -9,152 +9,152 @@
 9        android:targetSdkVersion="34" />
 10
 11    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-11-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:4:5-71
-11-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:4:22-68
+11-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:4:5-71
+11-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:4:22-68
 12    <uses-permission
-12-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:5-108
+12-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:5-108
 13        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-13-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:22-78
+13-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:22-78
 14        android:maxSdkVersion="28" />
-14-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:79-105
+14-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:5:79-105
 15    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-15-->[androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:22:5-79
-15-->[androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\a38d3c41066dd209fea41f5a6a534ad3\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:22:22-76
+15-->[androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\7a0bff5a1ac039ac9fa482cd2c6e98e1\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:22:5-79
+15-->[androidx.media3:media3-exoplayer:1.3.1] C:\Users\moonw\.gradle\caches\8.13\transforms\7a0bff5a1ac039ac9fa482cd2c6e98e1\transformed\media3-exoplayer-1.3.1\AndroidManifest.xml:22:22-76
 16
 17    <permission
-17-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\55097f130fc3784744cd64e6c9b4f6e4\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
+17-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\41b67a8d4af62bbee6615924996a7cb9\transformed\core-1.12.0\AndroidManifest.xml:22:5-24:47
 18        android:name="com.example.myapplication.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-18-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\55097f130fc3784744cd64e6c9b4f6e4\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
+18-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\41b67a8d4af62bbee6615924996a7cb9\transformed\core-1.12.0\AndroidManifest.xml:23:9-81
 19        android:protectionLevel="signature" />
-19-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\55097f130fc3784744cd64e6c9b4f6e4\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
+19-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\41b67a8d4af62bbee6615924996a7cb9\transformed\core-1.12.0\AndroidManifest.xml:24:9-44
 20
 21    <uses-permission android:name="com.example.myapplication.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
-21-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\55097f130fc3784744cd64e6c9b4f6e4\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
-21-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\55097f130fc3784744cd64e6c9b4f6e4\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
+21-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\41b67a8d4af62bbee6615924996a7cb9\transformed\core-1.12.0\AndroidManifest.xml:26:5-97
+21-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\41b67a8d4af62bbee6615924996a7cb9\transformed\core-1.12.0\AndroidManifest.xml:26:22-94
 22
 23    <application
-23-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:7:5-28:19
+23-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:7:5-28:19
 24        android:allowBackup="true"
-24-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:8:9-35
+24-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:8:9-35
 25        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-25-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\55097f130fc3784744cd64e6c9b4f6e4\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
+25-->[androidx.core:core:1.12.0] C:\Users\moonw\.gradle\caches\8.13\transforms\41b67a8d4af62bbee6615924996a7cb9\transformed\core-1.12.0\AndroidManifest.xml:28:18-86
 26        android:dataExtractionRules="@xml/data_extraction_rules"
-26-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:9:9-65
+26-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:9:9-65
 27        android:debuggable="true"
 28        android:extractNativeLibs="false"
 29        android:fullBackupContent="@xml/backup_rules"
-29-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:10:9-54
+29-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:10:9-54
 30        android:icon="@mipmap/ic_launcher"
-30-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:11:9-43
+30-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:11:9-43
 31        android:label="@string/app_name"
-31-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:12:9-41
+31-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:12:9-41
 32        android:roundIcon="@mipmap/ic_launcher_round"
-32-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:13:9-54
+32-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:13:9-54
 33        android:supportsRtl="true"
-33-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:14:9-35
+33-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:14:9-35
 34        android:testOnly="true"
 35        android:theme="@style/Theme.MyApplication" >
-35-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:15:9-51
+35-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:15:9-51
 36        <activity
-36-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:16:9-27:20
+36-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:16:9-27:20
 37            android:name="com.example.myapplication.MainActivity"
-37-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:17:13-41
+37-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:17:13-41
 38            android:exported="true"
-38-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:18:13-36
+38-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:18:13-36
 39            android:label="@string/app_name"
-39-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:20:13-45
+39-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:20:13-45
 40            android:screenOrientation="portrait"
-40-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:19:13-49
+40-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:19:13-49
 41            android:theme="@style/Theme.MyApplication" >
-41-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:21:13-55
+41-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:21:13-55
 42            <intent-filter>
-42-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:22:13-26:29
+42-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:22:13-26:29
 43                <action android:name="android.intent.action.MAIN" />
-43-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:23:17-69
-43-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:23:25-66
+43-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:23:17-69
+43-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:23:25-66
 44
 45                <category android:name="android.intent.category.LAUNCHER" />
-45-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:25:17-77
-45-->C:\Users\moonw\SEQ\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:25:27-74
+45-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:25:17-77
+45-->C:\Users\moonw\Downloads\AndroidStudioProjects\AndroidStudioProjects\MyApplication\app\src\main\AndroidManifest.xml:25:27-74
 46            </intent-filter>
 47        </activity>
 48        <activity
-48-->[androidx.compose.ui:ui-tooling-android:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\8bbc14bccca35191bc70447123d1aec7\transformed\ui-tooling-release\AndroidManifest.xml:23:9-25:39
+48-->[androidx.compose.ui:ui-tooling-android:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\eaf3caa6ff6f31c86d2c9786574f0363\transformed\ui-tooling-release\AndroidManifest.xml:23:9-25:39
 49            android:name="androidx.compose.ui.tooling.PreviewActivity"
-49-->[androidx.compose.ui:ui-tooling-android:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\8bbc14bccca35191bc70447123d1aec7\transformed\ui-tooling-release\AndroidManifest.xml:24:13-71
+49-->[androidx.compose.ui:ui-tooling-android:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\eaf3caa6ff6f31c86d2c9786574f0363\transformed\ui-tooling-release\AndroidManifest.xml:24:13-71
 50            android:exported="true" />
-50-->[androidx.compose.ui:ui-tooling-android:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\8bbc14bccca35191bc70447123d1aec7\transformed\ui-tooling-release\AndroidManifest.xml:25:13-36
+50-->[androidx.compose.ui:ui-tooling-android:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\eaf3caa6ff6f31c86d2c9786574f0363\transformed\ui-tooling-release\AndroidManifest.xml:25:13-36
 51
 52        <provider
-52-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\c4e595cbde58e9db10cb87d3e8454063\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
+52-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\80e7a58d13733dd4a60e4e8f1f7916b9\transformed\emoji2-1.3.0\AndroidManifest.xml:24:9-32:20
 53            android:name="androidx.startup.InitializationProvider"
-53-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\c4e595cbde58e9db10cb87d3e8454063\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
+53-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\80e7a58d13733dd4a60e4e8f1f7916b9\transformed\emoji2-1.3.0\AndroidManifest.xml:25:13-67
 54            android:authorities="com.example.myapplication.androidx-startup"
-54-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\c4e595cbde58e9db10cb87d3e8454063\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
+54-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\80e7a58d13733dd4a60e4e8f1f7916b9\transformed\emoji2-1.3.0\AndroidManifest.xml:26:13-68
 55            android:exported="false" >
-55-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\c4e595cbde58e9db10cb87d3e8454063\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
+55-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\80e7a58d13733dd4a60e4e8f1f7916b9\transformed\emoji2-1.3.0\AndroidManifest.xml:27:13-37
 56            <meta-data
-56-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\c4e595cbde58e9db10cb87d3e8454063\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
+56-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\80e7a58d13733dd4a60e4e8f1f7916b9\transformed\emoji2-1.3.0\AndroidManifest.xml:29:13-31:52
 57                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-57-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\c4e595cbde58e9db10cb87d3e8454063\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
+57-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\80e7a58d13733dd4a60e4e8f1f7916b9\transformed\emoji2-1.3.0\AndroidManifest.xml:30:17-75
 58                android:value="androidx.startup" />
-58-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\c4e595cbde58e9db10cb87d3e8454063\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
+58-->[androidx.emoji2:emoji2:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\80e7a58d13733dd4a60e4e8f1f7916b9\transformed\emoji2-1.3.0\AndroidManifest.xml:31:17-49
 59            <meta-data
-59-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\73ac88cc4f85d2c71074ca5fedc0f171\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:29:13-31:52
+59-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\2b9802cf4d34febd1fecea1ece75c0fe\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:29:13-31:52
 60                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-60-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\73ac88cc4f85d2c71074ca5fedc0f171\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:30:17-78
+60-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\2b9802cf4d34febd1fecea1ece75c0fe\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:30:17-78
 61                android:value="androidx.startup" />
-61-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\73ac88cc4f85d2c71074ca5fedc0f171\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:31:17-49
+61-->[androidx.lifecycle:lifecycle-process:2.7.0] C:\Users\moonw\.gradle\caches\8.13\transforms\2b9802cf4d34febd1fecea1ece75c0fe\transformed\lifecycle-process-2.7.0\AndroidManifest.xml:31:17-49
 62            <meta-data
-62-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
+62-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:29:13-31:52
 63                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-63-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
+63-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:30:17-85
 64                android:value="androidx.startup" />
-64-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
+64-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:31:17-49
 65        </provider>
 66
 67        <activity
-67-->[androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\79c096a648ea41de7221f2c115a4167b\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:23:9-25:39
+67-->[androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\0f1f93c2d8a50cedd9d3764cd475a968\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:23:9-25:39
 68            android:name="androidx.activity.ComponentActivity"
-68-->[androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\79c096a648ea41de7221f2c115a4167b\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:24:13-63
+68-->[androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\0f1f93c2d8a50cedd9d3764cd475a968\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:24:13-63
 69            android:exported="true" />
-69-->[androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\79c096a648ea41de7221f2c115a4167b\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:25:13-36
+69-->[androidx.compose.ui:ui-test-manifest:1.6.6] C:\Users\moonw\.gradle\caches\8.13\transforms\0f1f93c2d8a50cedd9d3764cd475a968\transformed\ui-test-manifest-1.6.6\AndroidManifest.xml:25:13-36
 70
 71        <receiver
-71-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
+71-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:34:9-52:20
 72            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-72-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
+72-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:35:13-76
 73            android:directBootAware="false"
-73-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
+73-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:36:13-44
 74            android:enabled="true"
-74-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
+74-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:37:13-35
 75            android:exported="true"
-75-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
+75-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:38:13-36
 76            android:permission="android.permission.DUMP" >
-76-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
+76-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:39:13-57
 77            <intent-filter>
-77-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
+77-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:40:13-42:29
 78                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-78-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
-78-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
+78-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:17-91
+78-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:41:25-88
 79            </intent-filter>
 80            <intent-filter>
-80-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
+80-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:43:13-45:29
 81                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-81-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
-81-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
+81-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:17-85
+81-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:44:25-82
 82            </intent-filter>
 83            <intent-filter>
-83-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
+83-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:46:13-48:29
 84                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-84-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
-84-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
+84-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:17-88
+84-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:47:25-85
 85            </intent-filter>
 86            <intent-filter>
-86-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
+86-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:49:13-51:29
 87                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-87-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
-87-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\1ba9bf59d4f68948db62ebf122988692\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
+87-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:17-95
+87-->[androidx.profileinstaller:profileinstaller:1.3.0] C:\Users\moonw\.gradle\caches\8.13\transforms\93480ab3ddb72fa624698c8dcf3da3d3\transformed\profileinstaller-1.3.0\AndroidManifest.xml:50:25-92
 88            </intent-filter>
 89        </receiver>
 90    </application>
