@@ -1,0 +1,198 @@
+import os
+import numpy as np
+import pandas as pd
+from pathlib import Path
+from tqdm.notebook import tqdm
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import librosa
+import torch
+from transformers import AutoModelForAudioClassification, AutoFeatureExtractor
+import warnings
+
+
+# --- Suppress irrelevant warnings ---
+warnings.filterwarnings('ignore', category=UserWarning)
+warnings.filterwarnings('ignore', category=FutureWarning)
+
+
+# ===================================
+# 1. MODEL & DATA CONFIGURATION
+# ===================================
+print("Loading Whisper-based model and feature extractor...")
+model_id = "firdhokk/speech-emotion-recognition-with-openai-whisper-large-v3"
+feature_extractor = AutoFeatureExtractor.from_pretrained(model_id, do_normalize=True)
+model = AutoModelForAudioClassification.from_pretrained(model_id)
+id2label = model.config.id2label
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+print(f"Whisper model loaded successfully to '{device}'.")
+
+
+# --- Path to your MELD data ---
+# 🌟 FULL RUN PATH TARGETING THE MAIN TRAIN SPLITS FOLDER 🌟
+# NOTE: Using the path you provided earlier
+DATASET_AUDIO_FOLDER_PATH = Path(r"C:\Users\moonw\SEQ\datasets\MELD\MELD.Raw\train_splits")
+LABEL_CSV_PATH = Path(r"C:\Users\moonw\SEQ\datasets\MELD\MELD.Raw\train_sent_emo.csv")
+
+
+# Define maximum duration for padding/truncation
+MAX_AUDIO_DURATION = 30.0
+OUTPUT_CSV_FILENAME = "whisper_meld_full_run_results.csv" # The file that will be saved!
+
+
+# ===================================
+# 2. EVALUATION
+# ===================================
+print("\n--- Starting Whisper-based Model Evaluation on MELD (FULL RUN) ---")
+
+
+# 1. Load Labels and File Paths
+print("1. Loading labels and mapping file paths...")
+labels_df = pd.read_csv(LABEL_CSV_PATH)
+labels_df['Dialogue_ID'] = labels_df['Dialogue_ID'].astype(str)
+labels_df['Utterance_ID'] = labels_df['Utterance_ID'].astype(str)
+
+
+file_path_map = {}
+for file in os.listdir(DATASET_AUDIO_FOLDER_PATH):
+    if file.endswith('.mp4'):
+        clean_name = file.replace("._", "")
+        key = os.path.splitext(clean_name)[0]
+       
+        full_path = DATASET_AUDIO_FOLDER_PATH / file
+        canonical_path = str(full_path.resolve()).replace('\\', '/')
+        file_path_map[key] = canonical_path
+       
+print(f"    Loaded {len(labels_df)} total labels and found {len(file_path_map)} audio files in debug folder.")
+
+
+# 🌟 Filter labels_df to only include files we found on disk (crucial for MELD) 🌟
+keys_to_filter = list(file_path_map.keys())
+if keys_to_filter:
+    labels_df['file_key'] = 'dia' + labels_df['Dialogue_ID'] + '_utt' + labels_df['Utterance_ID']
+    labels_df = labels_df[labels_df['file_key'].isin(keys_to_filter)].copy()
+   
+    # Store the file key, which is useful for the results CSV
+    eval_labels_df = labels_df[['Dialogue_ID', 'Utterance_ID', 'Emotion']].copy()
+    eval_labels_df['file_key'] = 'dia' + labels_df['Dialogue_ID'] + '_utt' + labels_df['Utterance_ID']
+   
+print(f"    Filtered labels down to {len(eval_labels_df)} entries for full run.")
+
+
+# 2. Run Evaluation Loop
+results = []
+error_count = 0
+MAX_ERRORS_TO_PRINT = 10
+print("\n2. Processing files and running inference...")
+
+
+for _, row in tqdm(eval_labels_df.iterrows(), total=eval_labels_df.shape[0], desc="Evaluating Files"):
+    dialogue_id, utterance_id, true_emotion, file_key = row['Dialogue_ID'], row['Utterance_ID'], row['Emotion'], row['file_key']
+    file_path = file_path_map.get(file_key)
+    if file_path is None: continue
+
+
+    predicted_emotion = "error_processing"
+   
+    try:
+        # Manual Librosa Loading with Feature Extractor Sampling Rate
+        audio_array, _ = librosa.load(file_path, sr=feature_extractor.sampling_rate, mono=True)
+       
+        # Padding/Truncation logic
+        max_length = int(feature_extractor.sampling_rate * MAX_AUDIO_DURATION)
+        audio_array = audio_array[:max_length]
+        if len(audio_array) < max_length:
+            audio_array = np.pad(audio_array, (0, max_length - len(audio_array)))
+           
+        inputs = feature_extractor(audio_array, sampling_rate=feature_extractor.sampling_rate, return_tensors="pt")
+        inputs = {key: value.to(device) for key, value in inputs.items()}
+       
+        with torch.no_grad():
+            outputs = model(**inputs)
+           
+        predicted_id = torch.argmax(outputs.logits, dim=-1).item()
+        predicted_emotion = id2label[predicted_id].capitalize()
+       
+        # Standardize 'Happy' to MELD's 'Joy'
+        if predicted_emotion == 'Happy': predicted_emotion = 'Joy'
+        # Standardize 'Sad' to 'Sadness' (for consistency with MELD/Audeering)
+        if predicted_emotion == 'Sad': predicted_emotion = 'Sadness'
+       
+    except Exception as e:
+        if error_count < MAX_ERRORS_TO_PRINT:
+            print(f"Error on {file_key} at path {file_path}: {type(e).__name__}: {e}")
+        error_count += 1
+        predicted_emotion = "error_processing"
+
+
+    results.append({'file_key': file_key, 'true_emotion': true_emotion, 'predicted_emotion': predicted_emotion})
+
+
+results_df = pd.DataFrame(results)
+
+
+# ===================================
+# 3. ANALYSIS, VISUALIZATION, & SAVE (!!! CRITICAL FIXES !!!)
+# ===================================
+
+
+# 🌟 FIX 1: Save the DataFrame to CSV 🌟
+try:
+    results_df.to_csv(OUTPUT_CSV_FILENAME, index=False)
+    print(f"\n✅ FULL RESULTS SAVED SUCCESSFULLY to: {OUTPUT_CSV_FILENAME}")
+except Exception as e:
+    print(f"\nCRITICAL ERROR: Failed to save CSV file. Error: {e}")
+
+
+
+
+print("\n3. Analyzing results...")
+# Filter out errors
+eval_df = results_df[~results_df['predicted_emotion'].str.contains('error|Unknown')].copy()
+
+
+if eval_df.empty:
+    print(f"\nCRITICAL ERROR: No files were processed successfully. Total errors: {error_count}")
+else:
+    print(f"\nSuccessfully processed {len(eval_df)} files. Total errors: {error_count}")
+    print("Sample of successful results:")
+    print(eval_df.head())
+   
+    # 🌟 FIX 2 & 3: Case-Insensitive Comparison and Label Standardization 🌟
+    # Convert both to lowercase for comparison
+    y_true_lower = eval_df['true_emotion'].str.lower()
+    y_pred_lower = eval_df['predicted_emotion'].str.lower()
+
+
+    # Apply standardization (e.g., 'fearful' from the model might map to 'fear')
+    # This ensures that even lowercased predictions match the lowercased ground truth.
+    y_pred_standardized = y_pred_lower.replace('happy', 'joy')
+    y_pred_standardized = y_pred_standardized.replace('fearful', 'fear')
+    y_pred_standardized = y_pred_standardized.replace('surprised', 'surprise')
+    y_pred_standardized = y_pred_standardized.replace('sad', 'sadness')
+    y_pred_standardized = y_pred_standardized.replace('angry', 'anger')
+    y_pred_standardized = y_pred_standardized.replace('neutral', 'neutral')
+    y_pred_standardized = y_pred_standardized.replace('disgust', 'disgust')
+   
+    all_labels = sorted(list(set(y_true_lower) | set(y_pred_standardized)))
+
+
+    accuracy = accuracy_score(y_true_lower, y_pred_standardized)
+    print(f"\n--- Results for Whisper-based Model on MELD (FULL RUN) ---")
+    print(f"Overall Accuracy: {accuracy:.2%}")
+    print("\nClassification Report:")
+    print(classification_report(y_true_lower, y_pred_standardized, labels=all_labels, zero_division=0))
+
+
+    # --- Confusion Matrix Generation ---
+    cm = confusion_matrix(y_true_lower, y_pred_standardized, labels=all_labels)
+    plt.figure(figsize=(12, 10))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=all_labels, yticklabels=all_labels)
+    plt.title('Confusion Matrix: Whisper-based Model vs. MELD Dataset (FULL RUN) - CORRECTED', fontsize=16)
+    plt.ylabel('True Emotion (MELD)', fontsize=12)
+    plt.xlabel('Predicted Emotion (Whisper - Standardized)', fontsize=12)
+    plt.savefig('Whisper_Full_Run_Results_confusion_matrix_corrected.png')
+    plt.show()
+    print("✅ Confusion Matrix image saved.")
