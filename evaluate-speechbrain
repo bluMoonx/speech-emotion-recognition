@@ -1,0 +1,190 @@
+import os
+import pandas as pd
+from pathlib import Path
+from tqdm.notebook import tqdm
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from speechbrain.inference.interfaces import foreign_class
+from speechbrain.utils.fetching import LocalStrategy
+import warnings
+import librosa
+import torch
+
+
+# --- Suppress irrelevant warnings ---
+warnings.filterwarnings('ignore', category=UserWarning)
+
+
+# ===================================
+# 1. MODEL & DATA CONFIGURATION
+# ===================================
+print("Loading local SpeechBrain model...")
+print("Attempting to load SpeechBrain model using foreign_class. This step may take significant time...")
+
+
+# Use Path objects for configuration
+LOCAL_MODEL_PATH = "pretrained_models/EncoderClassifier_SpeechBrain"
+
+
+# Initialize the model by pointing it to the LOCAL FOLDER.
+classifier = foreign_class(
+    source=LOCAL_MODEL_PATH,
+    pymodule_file="custom_interface.py",
+    classname="CustomEncoderWav2vec2Classifier",
+    savedir=LOCAL_MODEL_PATH,
+    local_strategy=LocalStrategy.COPY
+)
+print("SpeechBrain model loaded successfully from local files.")
+
+
+
+
+# --- Path to your MELD data (Converted to Path object) ---
+# 🌟 FULL RUN PATH TARGETING THE MAIN TRAIN SPLITS FOLDER 🌟
+DATASET_AUDIO_FOLDER_PATH = Path(r"C:\Users\moonw\SEQ\datasets\MELD\MELD.Raw\train_splits")
+LABEL_CSV_PATH = Path(r"C:\Users\moonw\SEQ\datasets\MELD\MELD.Raw\train_sent_emo.csv")
+
+
+# ===================================
+# 2. EVALUATION
+# ===================================
+print("\n--- Starting SpeechBrain Model Evaluation on MELD (FULL RUN) ---")
+
+
+# 1. Load Labels and File Paths
+print("1. Loading labels and mapping file paths...")
+labels_df = pd.read_csv(LABEL_CSV_PATH)
+labels_df['Dialogue_ID'] = labels_df['Dialogue_ID'].astype(str)
+labels_df['Utterance_ID'] = labels_df['Utterance_ID'].astype(str)
+
+
+file_path_map = {}
+for file in os.listdir(DATASET_AUDIO_FOLDER_PATH):
+    if file.endswith('.mp4'):
+        clean_name = file.replace("._", "")
+        key = os.path.splitext(clean_name)[0]
+       
+        # THE CRITICAL PATH FIX: MAX ROBUSTNESS
+        full_path = DATASET_AUDIO_FOLDER_PATH / file
+        canonical_path = str(full_path.resolve()).replace('\\', '/')
+        file_path_map[key] = canonical_path
+       
+print(f"    Loaded {len(labels_df)} labels and found {len(file_path_map)} audio files.")
+
+
+# Define the target sample rate for the SpeechBrain model
+TARGET_SAMPLE_RATE = 16000
+
+
+# 2. Run Evaluation Loop
+results = []
+error_count = 0
+MAX_ERRORS_TO_PRINT = 10
+print("\n2. Processing files and running inference...")
+
+
+# Filter labels_df to only include files we found on disk (crucial for MELD)
+keys_to_filter = list(file_path_map.keys())
+if keys_to_filter:
+    labels_df['file_key'] = 'dia' + labels_df['Dialogue_ID'] + '_utt' + labels_df['Utterance_ID']
+    labels_df = labels_df[labels_df['file_key'].isin(keys_to_filter)].copy()
+    labels_df = labels_df.drop(columns=['file_key']) # Clean up helper column
+print(f"    Filtered labels down to {len(labels_df)} entries for full run.")
+
+
+
+
+for _, row in tqdm(labels_df.iterrows(), total=labels_df.shape[0], desc="Evaluating Files"):
+    dialogue_id = row['Dialogue_ID']
+    utterance_id = row['Utterance_ID']
+    true_emotion = row['Emotion']
+
+
+    file_key = f"dia{dialogue_id}_utt{utterance_id}"
+    file_path = file_path_map.get(file_key)
+    if file_path is None: continue
+
+
+    predicted_emotion = "error_processing"
+    try:
+        # FIX: MANUALLY LOAD AUDIO TO CONTROL RESAMPLING/FORMAT
+        audio_data, _ = librosa.load(file_path, sr=TARGET_SAMPLE_RATE, mono=True)
+        signal = torch.from_numpy(audio_data).unsqueeze(0)
+       
+        _, _, _, text_lab = classifier.classify_batch(signal)
+       
+        predicted_emotion_code = text_lab[0]
+
+
+        # Map the model's output to the MELD labels for consistency
+        emotion_mapping = {'hap': 'Joy', 'neu': 'Neutral', 'ang': 'Anger', 'sad': 'Sadness', 'exc': 'Excitement'}
+        predicted_emotion = emotion_mapping.get(predicted_emotion_code, 'Unknown')
+    except Exception as e:
+        if error_count < MAX_ERRORS_TO_PRINT:
+             print(f"Error on {file_key} at path {file_path}: {type(e).__name__}: {e}")
+        error_count += 1
+
+
+    results.append({'file_key': file_key, 'true_emotion': true_emotion, 'predicted_emotion': predicted_emotion})
+
+
+results_df = pd.DataFrame(results)
+
+
+# 🌟 NEW STEP: SAVE DIAGNOSTIC FILE 🌟
+RESULTS_OUTPUT_PATH = "speechbrain_meld_full_run_results.csv"
+results_df.to_csv(RESULTS_OUTPUT_PATH, index=False)
+print(f"\n--- Diagnostic File Saved ---")
+print(f"Saved full evaluation results to: {RESULTS_OUTPUT_PATH}")
+
+
+# ===================================
+# 3. ANALYSIS & VISUALIZATION
+# ===================================
+print("\n3. Analyzing results...")
+# Filter out errors
+eval_df = results_df[~results_df['predicted_emotion'].str.contains('error|Unknown')].copy()
+
+
+if eval_df.empty:
+    print(f"\nCRITICAL ERROR: No files were processed successfully. Total errors: {error_count}")
+else:
+    print(f"\nSuccessfully processed {len(eval_df)} files. Total errors: {error_count}")
+    y_true = eval_df['true_emotion']
+    y_pred = eval_df['predicted_emotion']
+   
+    # Filter the ground truth labels to only those the model can predict
+    # This is CRITICAL because MELD has 7 classes and SpeechBrain only predicts 4-5.
+    predictable_emotions = set(y_pred.unique())
+    y_true_filtered = y_true[y_true.isin(predictable_emotions)]
+    y_pred_filtered = y_pred[y_true.isin(predictable_emotions)]
+
+
+    all_labels = sorted(list(y_pred.unique())) # Labels the model can actually predict
+
+
+    # Only calculate accuracy if we have data after filtering
+    if not y_true_filtered.empty:
+        accuracy = accuracy_score(y_true_filtered, y_pred_filtered)
+        print(f"\n--- Results for SpeechBrain Model on MELD ({len(all_labels)}-class subset) ---")
+        print(f"Overall Accuracy (on matching classes): {accuracy:.2%}")
+        print("\nClassification Report:")
+        # We need to ensure we use the filtered labels for the report
+        report = classification_report(y_true_filtered, y_pred_filtered, labels=all_labels, zero_division=0)
+        print(report)
+
+
+        cm = confusion_matrix(y_true_filtered, y_pred_filtered, labels=all_labels)
+       
+        # Plotting the Confusion Matrix
+        plt.figure(figsize=(10, 8))
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=all_labels, yticklabels=all_labels)
+        plt.title('Confusion Matrix: SpeechBrain Model vs. MELD (Filtered Subset)', fontsize=16)
+        plt.ylabel('True Emotion (MELD)', fontsize=12)
+        plt.xlabel('Predicted Emotion (SpeechBrain)', fontsize=12)
+        plt.show()
+    else:
+        print("\nNOTE: After filtering MELD true labels to match the SpeechBrain model's output classes, no matching samples remained for accuracy calculation.")
+        print(f"MELD True Labels: {set(y_true.unique())}")
+        print(f"SpeechBrain Predicted Labels: {predictable_emotions}")
