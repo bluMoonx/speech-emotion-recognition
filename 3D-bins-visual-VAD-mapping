@@ -1,0 +1,133 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+# --- 1. REPLICATING REVISED KOTLIN LOGIC ---
+
+centers = {
+    "Neutral":  {"a": 0.54, "v": 0.52, "d": 0.55},
+    "Joy":      {"a": 0.70, "v": 0.78, "d": 0.65},
+    "Anger":    {"a": 0.79, "v": 0.12, "d": 0.75}, # Updated
+    "Sadness":  {"a": 0.35, "v": 0.25, "d": 0.35},
+    "Fear":     {"a": 0.54, "v": 0.39, "d": 0.49},
+    "Disgust":  {"a": 0.62, "v": 0.28, "d": 0.61}, # Updated
+    "Surprise": {"a": 0.68, "v": 0.59, "d": 0.66}
+}
+
+def distance(v1, v2):
+    return np.sqrt((v1[0]-v2[0])**2 + (v1[1]-v2[1])**2 + (v1[2]-v2[2])**2)
+
+def find_closest_emotion(v_tuple):
+    arousal, valence, dominance = v_tuple
+    
+    # Calculate distances to updated centroids
+    dist_map = {k: distance(v_tuple, (v['a'], v['v'], v['d'])) for k, v in centers.items()}
+    closest_label = min(dist_map, key=dist_map.get)
+    min_dist = dist_map[closest_label]
+    
+    if min_dist > 0.45:
+        return "Neutral"
+    
+    if closest_label in ["Anger", "Joy", "Surprise"]:
+        if arousal < 0.50 or dominance < 0.50:
+            return "Neutral"
+        return closest_label
+    elif closest_label == "Sadness":
+        if arousal > 0.60 or dominance > 0.60:
+            return "Fear"
+        return "Sadness"
+    return closest_label
+
+def map_emotion_python(arousal, valence, dominance):
+    # POSITIVE BRANCH (V > 0.53)
+    if valence > 0.53:
+        if arousal > 0.60 and dominance > 0.60:
+            if (arousal > 0.75 and valence > 0.80 and dominance > 0.70) or \
+               (0.65 <= arousal <= 0.75 and valence > 0.70 and 0.60 <= dominance <= 0.75) or \
+               (0.55 <= arousal <= 0.65 and valence > 0.65):
+                return "Joy"
+            if 0.53 <= valence <= 0.57 and arousal > 0.67:
+                return "Surprise"
+            return "Joy"
+        if arousal > 0.68:
+            return "Surprise"
+        return "Neutral"
+    
+    # NEGATIVE BRANCH (V < 0.53)
+    elif valence < 0.53:
+        if arousal > 0.62 and 0.3 <= valence <= 0.57 and dominance > 0.69:
+            return "Surprise"
+            
+        if arousal > 0.60:
+            if dominance > 0.60:
+                # NEW ANGER THRESHOLD
+                if (arousal > 0.70 and valence < 0.28 and dominance > 0.70):
+                    return "Anger"
+                return "Disgust"
+            else:
+                return "Fear"
+        elif arousal < 0.48:
+            if (arousal < 0.35 and valence < 0.51 and dominance < 0.52) or \
+               (valence < 0.47 and dominance < 0.47):
+                return "Sadness"
+            elif 0.48 <= dominance <= 0.56 and -1.0 <= valence <= 0.23:
+                return "Disgust"
+            else:
+                return "Neutral"
+        else:
+            if dominance < 0.58 and valence < 0.41:
+                return "Fear"
+            elif dominance > 0.58:
+                return "Disgust"
+            else:
+                return "Neutral"
+    
+    # TRANSITION ZONE
+    else:
+        if arousal > 0.72 and 0.41 <= valence <= 0.60:
+            return "Surprise"
+        elif 0.47 <= arousal <= 0.58 and 0.48 <= dominance <= 0.60:
+            return "Neutral"
+        return find_closest_emotion((arousal, valence, dominance))
+
+# --- 2. GENERATING DATA ---
+res = 22 # Resolution
+v_vals = np.linspace(0, 1, res)
+a_vals = np.linspace(0, 1, res)
+d_vals = np.linspace(0, 1, res)
+
+A, V, D = np.meshgrid(a_vals, v_vals, d_vals, indexing='ij')
+voxels = np.vectorize(map_emotion_python)(A, V, D)
+
+color_map = {
+    "Joy": "#D4AF37", "Surprise": "#40E0D0", "Anger": "#B22222",
+    "Disgust": "#556B2F", "Sadness": "#191970", "Fear": "#4B0082", "Neutral": "grey"
+}
+
+# --- 3. PLOTTING ---
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+# Plot the 3D grid points (Cubbies)
+for label, color in color_map.items():
+    mask = voxels == label
+    ax.scatter(V[mask], A[mask], D[mask], c=color, alpha=0.15, s=10, marker='o')
+
+# Plot the Centroids (Vibrant dots)
+for label, coord in centers.items():
+    ax.scatter(coord['v'], coord['a'], coord['d'], 
+               c=color_map[label], s=200, marker='D', edgecolors='white', 
+               linewidth=1.5, label=f"{label} Centroid", alpha=1.0)
+
+ax.set_xlabel('Valence')
+ax.set_ylabel('Arousal')
+ax.set_zlabel('Dominance')
+
+# FLIP AXES: 1.0 at outer edge, 0.0 closest to audience
+ax.set_xlim(1.0, 0.0)
+ax.set_ylim(1.0, 0.0)
+ax.set_zlim(1.0, 0.0)
+
+ax.set_title('3D VAD Space: Bins & Centroids')
+plt.legend(loc='upper left', bbox_to_anchor=(1.1, 1))
+plt.show()
