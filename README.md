@@ -32,24 +32,3 @@ Inside, you will find key files such as (*but not limited to*):
 
 # Important Note on the ONNX Model #
 The original machine learning model file (which I've converted from its original Pytorch status to a .onnx file out of necessity and convenience) is **NOT INCLUDED** in this repository. Due to its large size (over 500 MB), it exceeds GitHub's file size limit. The application code is structured to load a model named emotion_model_final.onnx from the app's assets folder, but you will need to provide your own model to build and run the project successfully. To do so, please use the *above link* and convert to .onnx to fully run. This repository is only meant to be used as a workspace to share code and commit saved work.
-
-
-mermaid
-gantt
-    title SER Project Development Timeline
-    dateFormat  YYYY-MM-DD
-    section Phase 1: Research
-    Env & Data Setup           :a1, 2024-01-01, 7d
-    Model Benchmarking         :a2, after a1, 14d
-    VAD Logic Iterations (V1-V7):a3, after a2, 10d
-    section Phase 2: Android Infrastructure
-    Project Init & ONNX Porting:b1, 2024-01-31, 5d
-    Audio Pipeline Development :b2, after b1, 7d
-    section Phase 3: Core Features
-    Record Clip & File Selection:c1, after b2, 7d
-    Live Feedback & Visualizer :c2, after c1, 10d
-    V7 Logic Integration       :c3, after c2, 3d
-    section Phase 4: Data & Export
-    Persistence (Gson/JSON)    :d1, after c3, 5d
-    History UI & Export Logic  :d2, after d1, 5d
-    Final Polish & Git Cleanup :d3, after d2, 3d
