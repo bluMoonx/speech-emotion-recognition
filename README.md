@@ -32,3 +32,6 @@ Inside, you will find key files such as (*but not limited to*):
 
 # Important Note on the ONNX Model #
 The original machine learning model file (which I've converted from its original Pytorch status to a .onnx file out of necessity and convenience) is **NOT INCLUDED** in this repository. Due to its large size (over 500 MB), it exceeds GitHub's file size limit. The application code is structured to load a model named emotion_model_final.onnx from the app's assets folder, but you will need to provide your own model to build and run the project successfully. To do so, please use the *above link* and convert to .onnx to fully run. This repository is only meant to be used as a workspace to share code and commit saved work.
+
+## Legal & Privacy Note ##
+On this application, audio is processed locally on-device and offline. No audio data or transcripts are transmitted to an external server. The app does not record in the background without user's knowledge.
