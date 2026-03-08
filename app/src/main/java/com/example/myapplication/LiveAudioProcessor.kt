@@ -114,8 +114,16 @@ class LiveAudioProcessor(
                     if (inferenceAccumulator.size >= samplesNeeded) {
                         val floatData = inferenceAccumulator.map { it / 32768.0f }.toFloatArray()
                         inferenceAccumulator.clear()
+                        // --- START LATENCY LOG ---
+                        val startTime = System.currentTimeMillis()
 
                         val prediction = emotionPredictor.predict(floatData)
+
+                        val endTime = System.currentTimeMillis()
+                        val latency = endTime - startTime
+                        Log.d("LATENCY_TEST", "LIVE CHUNK INFERENCE: ${latency}ms")
+                        // --- END LATENCY LOG ---
+
                         if (prediction != null && prediction.size >= 3) {
                             val vector = EmotionVector(arousal = prediction[0], dominance = prediction[1], valence = prediction[2])
                             val mapped = mapVectorToEmotion(vector)

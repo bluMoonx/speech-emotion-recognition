@@ -11,6 +11,8 @@ import android.provider.OpenableColumns
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
@@ -110,7 +112,8 @@ class MainActivity : ComponentActivity() {
 
     //region Class Properties
     private var appState: AppState by mutableStateOf(AppState.Idle)
-
+    private val PREFS_NAME = "ser_prefs"
+    private val KEY_ONBOARDING_DONE = "onboarding_completed"
     private val emotionPredictor by lazy { EmotionPredictor(this) }
     private val liveAudioProcessor by lazy { LiveAudioProcessor(this, lifecycleScope, emotionPredictor) }
     private val audioPlayer by lazy { AudioPlayer(this) }
@@ -128,13 +131,81 @@ class MainActivity : ComponentActivity() {
     private lateinit var navController: NavHostController
     private enum class RecordingIntention { CLIP, LIVE, NONE }
     //endregion
+    private fun saveHistoryToDisk(items: List<HistoryItem>) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val json = Gson().toJson(items)
+            File(filesDir, "history_metadata.json").writeText(json)
+        }
+    }
 
+    private fun loadHistoryFromDisk() {
+        val file = File(filesDir, "history_metadata.json")
+        if (file.exists()) {
+            try {
+                val json = file.readText()
+                val type = object : TypeToken<List<HistoryItem>>() {}.type
+                val loadedItems: List<HistoryItem> = Gson().fromJson(json, type)
+                _history.value = loadedItems
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load history", e)
+            }
+        }
+    }
+    private fun deleteHistoryItem(item: HistoryItem) {
+        // 1. Delete the actual audio file
+        val file = File(item.permanentPath)
+        if (file.exists()) file.delete()
+
+        // 2. Update the list and save metadata
+        val updatedList = _history.value.filter { it.id != item.id }
+        _history.value = updatedList
+        saveHistoryToDisk(updatedList)
+    }
+
+    private fun clearAllHistory() {
+        _history.value.forEach { item -> File(item.permanentPath).delete() }
+        _history.value = emptyList()
+        saveHistoryToDisk(emptyList())
+    }
+
+    private fun exportHistoryAsText(): String {
+        val sb = StringBuilder()
+        sb.append("SER APP - EMOTION HISTORY EXPORT\n")
+        sb.append("Generated on: ${Date()}\n\n")
+        _history.value.sortedByDescending { it.timestamp }.forEach { item ->
+            sb.append("Title: ${item.title}\n")
+            sb.append("Type: ${item.type}\n")
+            sb.append("Detected: ${item.detectedEmotion}\n")
+            sb.append("Confirmed: ${item.userConfirmedEmotion}\n")
+            sb.append("VAD: V:${item.vector.valence}, A:${item.vector.arousal}, D:${item.vector.dominance}\n")
+            sb.append("Timestamp: ${SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(Date(item.timestamp))}\n")
+            sb.append("-----------------------------------\n")
+        }
+        return sb.toString()
+    }
+
+    private fun shareHistory() {
+        val exportData = exportHistoryAsText()
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, exportData)
+            type = "text/plain"
+        }
+        val shareIntent = Intent.createChooser(sendIntent, "Share Emotion History")
+        startActivity(shareIntent)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        loadHistoryFromDisk()
 
         pickAudioLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                result.data?.data?.let { uri -> appState = AppState.Success(getFileName(uri), uri) }
+                result.data?.data?.let { uri -> val tempFile = File(cacheDir, getFileName(uri))
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        tempFile.outputStream().use { output -> input.copyTo(output) }
+                    }
+                    currentRecordingFile = tempFile
+                    appState = AppState.Success(getFileName(uri), uri) }
                     ?: run { appState = AppState.Failure("Could not retrieve file URI.") }
             }
         }
@@ -227,6 +298,14 @@ class MainActivity : ComponentActivity() {
                                 icon = { Icon(Icons.Default.Book, contentDescription = "Emotion Catalog") },
                                 selected = false,
                                 onClick = { navController.navigate("catalog"); scope.launch { drawerState.close() } }
+                            )
+                            NavigationDrawerItem(
+                                label = { Text(text = "Model Information") },    icon = { Icon(Icons.Default.Memory, contentDescription = "Model") }, // Memory icon looks like a chip/model
+                                selected = false,
+                                onClick = {
+                                    navController.navigate("model_info")
+                                    scope.launch { drawerState.close() }
+                                }
                             )
                         }
                     }
@@ -426,14 +505,22 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable("history") {
-                                DisposableEffect(Unit) { onDispose { audioPlayer.stop() } }
                                 val historyItems by history.collectAsState()
-                                HistoryScreen(
-                                    historyItems = historyItems,
+                                HistoryScreen(historyItems = historyItems,
                                     onPlayItem = { path -> audioPlayer.play(Uri.fromFile(File(path))) },
-                                    onStopPlayer = { audioPlayer.stop() }, // This will now match the signature below
+                                    onStopPlayer = { audioPlayer.stop() },
                                     onNavigateUp = { navController.popBackStack() },
-                                    onRenameItem = { id, newTitle -> updateHistoryItemTitle(id, newTitle) }
+                                    onRenameItem = { id, newTitle -> updateHistoryItemTitle(id, newTitle) },
+                                    onDeleteItem = { item -> deleteHistoryItem(item) },
+                                    onClearAll = { clearAllHistory() },
+                                    onShare = { shareHistory() },
+                                    onDownload = {
+                                        // Save to Downloads folder logic
+                                        val data = exportHistoryAsText()
+                                        val file = File(getExternalFilesDir(null), "SER_Export_${System.currentTimeMillis()}.txt")
+                                        file.writeText(data)
+                                        // Show a toast or snackbar "Saved to ${file.absolutePath}"
+                                    }
                                 )
                             }
 
@@ -441,9 +528,50 @@ class MainActivity : ComponentActivity() {
                             composable("catalog") {
                                 EmotionCatalogScreen { navController.popBackStack() }
                             }
+                            composable("model_info") {
+                                ModelInfoScreen { navController.popBackStack() }
+                            }
                         }
                     }
                 }
+            }
+            var showPrivacyDisclosure by remember { mutableStateOf(!getSharedPreferences(PREFS_NAME, MODE_PRIVATE).getBoolean(KEY_ONBOARDING_DONE, false)) }
+            var showOnboarding by remember { mutableStateOf(false) }
+
+            if (showPrivacyDisclosure) {
+                AlertDialog(
+                    onDismissRequest = { },
+                    title = { Text("Privacy & Microphone Usage") },
+                    text = { Text("SER processes all audio locally on your device. Your voice data is never uploaded to a server or shared with third parties. We require microphone access solely to analyze emotional tone in real-time.") },
+                    confirmButton = {
+                        Button(onClick = {
+                            showPrivacyDisclosure = false
+                            showOnboarding = true
+                        }) { Text("I Understand") }
+                    }
+                )
+            }
+
+            if (showOnboarding) {
+                AlertDialog(
+                    onDismissRequest = { },
+                    title = { Text("Quick Start Guide") },
+                    text = {
+                        Column {
+                            Text("• Record Clip: 2-6 seconds of one clear emotion.")
+                            Text("• Select File: Analyze existing 16kHz mono .wav files. If file isn't in this format, the model might behave inaccurately.")
+                            Text("• Live: Real-time feedback as you speak.")
+                            Spacer(Modifier.height(8.dp))
+                            Text("Note: VAD stands for Valence (Positivity), Arousal (Energy), and Dominance (Control).", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        }
+                    },
+                    confirmButton = {
+                        Button(onClick = {
+                            showOnboarding = false
+                            getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().putBoolean(KEY_ONBOARDING_DONE, true).apply()
+                        }) { Text("Get Started") }
+                    }
+                )
             }
         }
     }
@@ -468,20 +596,44 @@ class MainActivity : ComponentActivity() {
     }
 
     private suspend fun detectEmotion(uri: Uri, onSuccess: (EmotionVector) -> Unit, onFailure: (String) -> Unit) {
-        try {
-            val shortArray = AudioDecoder.decodeAudioFileToPcmShortArray(this, uri)
-            if (shortArray == null || shortArray.size < 16000 || !isSpeechDetected(shortArray, 0.01f)) {
-                onFailure("Clip is too short or no speech was detected.")
+        try {            // 1. SIZE VALIDATION
+            val parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "r")
+            val fileSize = parcelFileDescriptor?.statSize ?: 0
+            parcelFileDescriptor?.close()
+
+            if (fileSize > 5_000_000) {
+                onFailure("File is too large for mobile processing.")
                 return
             }
 
-            val processedAudio = preprocessAudioForModel(shortArray)
-            val prediction = emotionPredictor.predict(processedAudio) ?: throw Exception("Prediction failed.")
+            // 2. DECODE AUDIO
+            val pcm = AudioDecoder.decodeAudioFileToPcmShortArray(this, uri)
+
+            // 3. SPEECH CONTENT VALIDATION
+            if (pcm == null || pcm.size < 8000) {
+                onFailure("Audio clip is too short to detect emotion.")
+                return
+            }
+
+            // 4. PREPROCESS
+            val floatData = preprocessAudioForModel(pcm)
+
+            // 5. INFERENCE WITH LATENCY LOGGING
+            val startTime = System.currentTimeMillis()
+
+            val prediction = emotionPredictor.predict(floatData) ?: throw Exception("Inference Failed")
+
+            val endTime = System.currentTimeMillis()
+            val latency = endTime - startTime
+            Log.d("LATENCY_TEST", "BATCH INFERENCE: ${latency}ms for clip: ${getFileName(uri)}")
+
+            // 6. SUCCESS
             val vector = EmotionVector(arousal = prediction[0], valence = prediction[2], dominance = prediction[1])
             onSuccess(vector)
+
         } catch (e: Exception) {
-            Log.e(TAG, "Detection failed for URI", e)
-            onFailure(e.message ?: "An unknown error occurred during detection.")
+            Log.e(TAG, "Detection error", e)
+            onFailure("Could not process file. Ensure it is a valid .wav format.")
         }
     }
 
@@ -553,7 +705,8 @@ class MainActivity : ComponentActivity() {
         }
         _history.value = updatedList
         Log.d(TAG, "Updated title for item $itemId to '$newTitle'")
-    }
+            saveHistoryToDisk(updatedList)
+        }
 
     private fun saveHistoryItem(
         finalEmotion: String,
@@ -591,6 +744,7 @@ class MainActivity : ComponentActivity() {
             currentRecordingFile = null
             tempAudioFile = null
         }
+        saveHistoryToDisk(_history.value)
     }
 
 
@@ -725,11 +879,21 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun RecordingScreen(amplitude: Float, onStopRecording: () -> Unit) {
-        val amplitudes = remember { mutableStateListOf<Float>() } // This is a List<Float>
+        // Reduce total bars to 80 to make the animation feel faster/standard
+        val maxBars = 80
+        val amplitudes = remember { mutableStateListOf<Float>() }
+        var lastSmoothAmplitude by remember { mutableFloatStateOf(0f) }
+
         LaunchedEffect(amplitude) {
-            amplitudes.add((amplitude * 4.0f).coerceIn(0f, 1f))
-            if (amplitudes.size > 150) amplitudes.removeAt(0)
+            // Smoothing: logic to prevent weird "jittery" oscillations
+            val smoothed = (amplitude * 0.3f) + (lastSmoothAmplitude * 0.7f)
+            lastSmoothAmplitude = smoothed
+
+            // Scale the visual height (multiplied by 6 for better visibility)
+            amplitudes.add(smoothed.coerceIn(0.01f, 1f))
+            if (amplitudes.size > maxBars) amplitudes.removeAt(0)
         }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -738,37 +902,53 @@ class MainActivity : ComponentActivity() {
             verticalArrangement = Arrangement.Center
         ) {
             Spacer(modifier = Modifier.weight(1f))
-            Text("Recording...", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = Color.White)
-            Spacer(modifier = Modifier.height(16.dp))
+            Text("Recording...", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Spacer(modifier = Modifier.height(32.dp))
 
-            // FIX: Ensure this Canvas logic only expects Float, not AmplitudePoint
             Canvas(modifier = Modifier
                 .fillMaxWidth()
-                .height(100.dp)
-                .padding(horizontal = 16.dp)) {
-                val spacing = size.width / 150f
-                val maxAmplitude = size.height / 2f
+                .height(150.dp) // Taller canvas for better perspective
+                .padding(horizontal = 24.dp)) {
+
+                val canvasWidth = size.width
+                val canvasHeight = size.height
+                val barSpacing = canvasWidth / maxBars
+                val middleY = canvasHeight / 2f
+
                 amplitudes.forEachIndexed { index, amp ->
-                    val x = index * spacing
-                    val y = maxAmplitude * amp
+                    val x = index * barSpacing
+                    // Scale the bar height
+                    val barHeight = (amp * canvasHeight * 0.8f).coerceAtLeast(4f)
+
                     drawLine(
                         color = Color.White,
-                        start = Offset(x, maxAmplitude - y),
-                        end = Offset(x, maxAmplitude + y),
-                        strokeWidth = 2f
+                        start = Offset(x, middleY - (barHeight / 2)),
+                        end = Offset(x, middleY + (barHeight / 2)),
+                        strokeWidth = 6f, // Thicker bars
+                        cap = androidx.compose.ui.graphics.StrokeCap.Round // Rounded look
                     )
                 }
             }
 
             Spacer(modifier = Modifier.weight(1f))
-            IconButton(onClick = onStopRecording, modifier = Modifier
-                .size(72.dp)
-                .padding(bottom = 32.dp)) {
-                Icon(Icons.Default.Stop, "Stop Recording", tint = Color.Red, modifier = Modifier.fillMaxSize())
+
+            // Stop Button
+            IconButton(
+                onClick = onStopRecording,
+                modifier = Modifier
+                    .size(90.dp)
+                    .padding(bottom = 32.dp)
+                    .background(Color.White.copy(alpha = 0.1f), CircleShape)
+            ) {
+                Icon(
+                    Icons.Default.Stop,
+                    "Stop",
+                    tint = Color.Red,
+                    modifier = Modifier.size(48.dp)
+                )
             }
         }
     }
-
     @Composable
     fun PostRecordingScreen(appState: AppState.PostRecordingReview, onDetectClick: (String, Uri) -> Unit, onPlayClick: () -> Unit, onReRecordClick: () -> Unit) {
         Column(
@@ -903,135 +1083,110 @@ class MainActivity : ComponentActivity() {
             ) { Text("Accept & Save") }
         }
     }
-
     @Composable
     fun HistoryScreen(
         historyItems: List<HistoryItem>,
         onPlayItem: (path: String) -> Unit,
         onStopPlayer: () -> Unit,
         onNavigateUp: () -> Unit,
-        onRenameItem: (id: String, newTitle: String) -> Unit
+        onRenameItem: (id: String, title: String) -> Unit,
+        onDeleteItem: (HistoryItem) -> Unit,
+        onClearAll: () -> Unit,
+        onShare: () -> Unit,
+        onDownload: () -> Unit
     ) {
         var showRenameDialogFor by remember { mutableStateOf<HistoryItem?>(null) }
+        var showClearConfirm by remember { mutableStateOf(false) }
         var expandedItem by remember { mutableStateOf<HistoryItem?>(null) }
         var currentlyPlayingId by remember { mutableStateOf<String?>(null) }
 
-        Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("History") },
+                    navigationIcon = { IconButton(onClick = onNavigateUp) { Icon(Icons.Default.ArrowBack, null) } },
+                    actions = {
+                        IconButton(onClick = onShare) { Icon(Icons.Default.Share, null) }
+                        IconButton(onClick = onDownload) { Icon(Icons.Default.Download, null) }
+                        IconButton(onClick = { showClearConfirm = true }) { Icon(Icons.Default.DeleteSweep, null, tint = Color.Red) }
+                    }
+                )
+            },
+            containerColor = Color.Black
+        ) { pad ->
             if (historyItems.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No recordings saved yet.", style = MaterialTheme.typography.bodyLarge, color = Color.White)
+                Box(Modifier.fillMaxSize().padding(pad), contentAlignment = Alignment.Center) {
+                    Text("No recordings saved yet.", color = Color.White)
                 }
             } else {
-                LazyColumn(contentPadding = PaddingValues(16.dp)) {
-                    item {
-                        Text("Session History", style = MaterialTheme.typography.headlineMedium, color = Color.White, modifier = Modifier.padding(bottom = 8.dp))
-                    }
+                LazyColumn(Modifier.padding(pad).padding(16.dp)) {
                     items(historyItems.sortedByDescending { it.timestamp }) { item ->
-                        ElevatedCard(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)) {
-                            Column {
+                        ElevatedCard(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                            Column(Modifier.padding(16.dp)) {
+                                // 1. SESSION STRIP (Only for Sessions)
                                 if (item.type == HistoryItemType.SESSION && item.sessionMap.isNotEmpty()) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(20.dp) // Small strip
-                                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.DarkGray.copy(alpha = 0.3f))
-                                    ) {
-                                        Canvas(modifier = Modifier.fillMaxSize()) {
-                                            val segmentWidth = size.width / item.sessionMap.size
-                                            item.sessionMap.forEachIndexed { index, emotion ->
-                                                drawRect(
-                                                    color = emotion.color,
-                                                    topLeft = Offset(index * segmentWidth, 0f),
-                                                    size = Size(segmentWidth + 1f, size.height)
-                                                )
+                                    Box(Modifier.fillMaxWidth().height(12.dp).clip(CircleShape).background(Color.DarkGray)) {
+                                        Canvas(Modifier.fillMaxSize()) {
+                                            val w = size.width / item.sessionMap.size
+                                            item.sessionMap.forEachIndexed { i, em ->
+                                                drawRect(em.color, Offset(i * w, 0f), Size(w + 1f, size.height))
                                             }
                                         }
                                     }
+                                    Spacer(Modifier.height(8.dp))
                                 }
-                                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                    val icon = if (item.type == HistoryItemType.CLIP) Icons.Default.Mic else Icons.Default.Podcasts
-                                    Icon(
-                                        imageVector = icon,
-                                        contentDescription = item.type.name,
-                                        modifier = Modifier.padding(end = 16.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(item.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, maxLines = 1)
+
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text(item.title, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+
+                                        // 2. TRUE VS DETECTED EMOTION
                                         if (item.type == HistoryItemType.CLIP) {
                                             Text("True Emotion: ${item.userConfirmedEmotion}", style = MaterialTheme.typography.bodyLarge)
-                                            Text("Detected: ${item.detectedEmotion}", style = MaterialTheme.typography.titleSmall, fontStyle = FontStyle.Italic, color = createMappedEmotion(item.detectedEmotion).color)
+                                            Text("Detected: ${item.detectedEmotion}", color = createMappedEmotion(item.detectedEmotion).color, style = MaterialTheme.typography.bodyMedium)
+
+                                            // 3. VAD VALUES
+                                            Text(
+                                                text = "V: ${"%.2f".format(item.vector.valence)}  A: ${"%.2f".format(item.vector.arousal)}  D: ${"%.2f".format(item.vector.dominance)}",
+                                                color = Color.Gray,
+                                                style = MaterialTheme.typography.bodySmall
+                                            )
                                         } else {
-                                            Text("Primary Emotion: ${item.userConfirmedEmotion}", style = MaterialTheme.typography.bodyMedium, color = createMappedEmotion(item.userConfirmedEmotion).color)
-                                            Spacer(Modifier.height(5.dp))
+                                            Text("Primary Emotion: ${item.userConfirmedEmotion}", color = createMappedEmotion(item.userConfirmedEmotion).color)
                                         }
-                                        Text(SimpleDateFormat("MMM dd, yyyy, hh:mm a", Locale.getDefault()).format(Date(item.timestamp)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
-                                    if (item.type == HistoryItemType.SESSION) {
-                                        IconButton(onClick = { expandedItem = if (expandedItem?.id == item.id) null else item }) {
-                                            Icon(if (expandedItem?.id == item.id) Icons.Default.ExpandLess else Icons.Default.ExpandMore, "Expand")
-                                        }
-                                    }
-                                    IconButton(onClick = {
-                                        if (currentlyPlayingId == item.id) {
-                                            onStopPlayer()
-                                            currentlyPlayingId = null
-                                        } else {
-                                            onPlayItem(item.permanentPath)
-                                            currentlyPlayingId = item.id
-                                        }
-                                    }) {
-                                        Icon(
-                                            imageVector = if (currentlyPlayingId == item.id) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                            contentDescription = if (currentlyPlayingId == item.id) "Stop" else "Play",
-                                            modifier = Modifier.size(36.dp)
-                                        )
                                     }
 
-// Show the rename icon for ALL item types
-                                    IconButton(onClick = { showRenameDialogFor = item }) {
-                                        Icon(Icons.Default.Edit, "Rename Item", tint = Color.Gray)
+                                    // 4. ACTION BUTTONS
+                                    Row {
+                                        IconButton(onClick = {
+                                            if (currentlyPlayingId == item.id) {
+                                                onStopPlayer()
+                                                currentlyPlayingId = null
+                                            } else {
+                                                onPlayItem(item.permanentPath)
+                                                currentlyPlayingId = item.id
+                                            }
+                                        }) {
+                                            Icon(if (currentlyPlayingId == item.id) Icons.Default.Pause else Icons.Default.PlayArrow, null)
+                                        }
+                                        IconButton(onClick = { showRenameDialogFor = item }) { Icon(Icons.Default.Edit, null) }
+                                        IconButton(onClick = { onDeleteItem(item) }) { Icon(Icons.Default.Delete, null, tint = Color.Red.copy(alpha = 0.7f)) }
+
+                                        if (item.type == HistoryItemType.SESSION) {
+                                            IconButton(onClick = { expandedItem = if (expandedItem?.id == item.id) null else item }) {
+                                                Icon(if (expandedItem?.id == item.id) Icons.Default.ExpandLess else Icons.Default.ExpandMore, null)
+                                            }
+                                        }
                                     }
                                 }
 
-                                AnimatedVisibility(visible = expandedItem?.id == item.id && item.type == HistoryItemType.SESSION) {
-                                    Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-                                        Divider(modifier = Modifier.padding(vertical = 8.dp))
-                                        Text("Session Breakdown:", style = MaterialTheme.typography.titleMedium, color = Color.White)
-
-                                        // Calculate counts and percentages from the saved sessionMap
-                                        val totalEmotions = item.sessionMap.size.toFloat().coerceAtLeast(1f)
-                                        val emotionCounts = item.sessionMap.groupingBy { it.label }.eachCount()
-
-                                        // Sort: Most prominent to least
-                                        val sortedEmotions = emotionCounts.entries.sortedByDescending { it.value }
-
-                                        Column(modifier = Modifier.padding(top = 8.dp)) {
-                                            sortedEmotions.forEach { (label, count) ->
-                                                val percentage = (count / totalEmotions) * 100
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(vertical = 2.dp),
-                                                    horizontalArrangement = Arrangement.SpaceBetween
-                                                ) {
-                                                    Text(
-                                                        text = "• $label",
-                                                        style = MaterialTheme.typography.bodyLarge,
-                                                        color = createMappedEmotion(label).color,
-                                                        modifier = Modifier.weight(1f)
-                                                    )
-                                                    Text(
-                                                        text = "${"%.1f".format(percentage)}%",
-                                                        style = MaterialTheme.typography.bodyMedium,
-                                                        color = Color.LightGray
-                                                    )
-                                                }
-                                            }
+                                // 5. SESSION BREAKDOWN (Animated)
+                                AnimatedVisibility(expandedItem?.id == item.id && item.type == HistoryItemType.SESSION) {
+                                    Column {
+                                        Divider(Modifier.padding(vertical = 8.dp))
+                                        val total = item.sessionMap.size.toFloat().coerceAtLeast(1f)
+                                        item.sessionMap.groupingBy { it.label }.eachCount().forEach { (label, count) ->
+                                            Text("$label: ${"%.1f".format((count / total) * 100)}%", color = createMappedEmotion(label).color)
                                         }
                                     }
                                 }
@@ -1039,35 +1194,67 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-
-                showRenameDialogFor?.let { itemToRename ->
-                    var newName by remember { mutableStateOf(itemToRename.title) }
-                    AlertDialog(
-                        onDismissRequest = { showRenameDialogFor = null },
-                        title = { Text("Rename Recording") },
-                        text = { OutlinedTextField(value = newName, onValueChange = { newName = it }, label = { Text("New Name") }, singleLine = true) },
-                        confirmButton = {
-                            Button(
-                                onClick = {
-                                    if (newName.isNotBlank()) onRenameItem(itemToRename.id, newName.trim())
-                                    showRenameDialogFor = null
-                                },
-                                enabled = newName.isNotBlank()
-                            ) { Text("Save") }
-                        },
-                        dismissButton = { Button(onClick = { showRenameDialogFor = null }) { Text("Cancel") } }
-                    )
-                }
             }
-        }
-        DisposableEffect(Unit) {
-            onDispose {
-                onStopPlayer()
-                currentlyPlayingId = null
+
+            // DIALOGS
+            if (showClearConfirm) {
+                AlertDialog(
+                    onDismissRequest = { showClearConfirm = false },
+                    title = { Text("Clear All History?") },
+                    text = { Text("This will permanently delete all recordings and emotional data.") },
+                    confirmButton = { TextButton(onClick = { onClearAll(); showClearConfirm = false }) { Text("Clear", color = Color.Red) } },
+                    dismissButton = { TextButton(onClick = { showClearConfirm = false }) { Text("Cancel") } }
+                )
+            }
+            showRenameDialogFor?.let { item ->
+                var newName by remember { mutableStateOf(item.title) }
+                AlertDialog(
+                    onDismissRequest = { showRenameDialogFor = null },
+                    title = { Text("Rename Recording") },
+                    text = { OutlinedTextField(newName, { newName = it }, singleLine = true) },
+                    confirmButton = { Button(onClick = { onRenameItem(item.id, newName); showRenameDialogFor = null }) { Text("Save") } },
+                    dismissButton = { TextButton(onClick = { showRenameDialogFor = null }) { Text("Cancel") } }
+                )
             }
         }
     }
+    @Composable
+    fun ModelInfoScreen(onNavigateUp: () -> Unit) {
+        val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
+        Column(
+            modifier = Modifier.fillMaxSize().background(Color.Black).padding(24.dp).verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(Icons.Default.Analytics, null, tint = Color.White, modifier = Modifier.size(64.dp))
+            Text("Model Credits", style = MaterialTheme.typography.headlineMedium, color = Color.White)
+            Text(
+                text = "This application utilizes the wav2vec2 emotion recognition model developed by audEERING GmbH.",
+                color = Color.White, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 16.dp)
+            )
+            Text("The model is used under the CC BY-NC-SA 4.0 license for non-commercial research purposes.", color = Color.Gray, textAlign = TextAlign.Center)
 
+            Spacer(Modifier.height(24.dp))
+            Button(onClick = { uriHandler.openUri("https://huggingface.co/audeering/wav2vec2-large-robust-12-ft-emotion-msp-dim") }, modifier = Modifier.fillMaxWidth()) {
+                Text("View on Hugging Face")
+            }
+            OutlinedButton(
+                onClick = { uriHandler.openUri("https://www.audeering.com/") },
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+            ) {
+                Text("Visit audEERING Website")
+            }
+
+            // YOUR GITHUB LINK
+            Spacer(Modifier.height(48.dp))
+            Divider(color = Color.DarkGray)
+            Spacer(Modifier.height(16.dp))
+            Text("Developer Resources", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+            Text("For detailed documentation on how this app was built and the VAD mapping logic, visit the GitHub repository:", color = Color.LightGray, textAlign = TextAlign.Center, modifier = Modifier.padding(vertical = 8.dp))
+            TextButton(onClick = { uriHandler.openUri("https://github.com/BluMooon/speech-emotion-recognition/blob/main/README.md") }) {
+                Text("GitHub: BluMooon/speech-emotion-recognition", color = MaterialTheme.colorScheme.primary, textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline)
+            }
+        }
+    }
     @Composable
     fun EmotionCatalogScreen(onNavigateUp: () -> Unit) {
         val catalog = listOf("Joy", "Anger", "Sadness", "Fear", "Disgust", "Surprise", "Neutral")

@@ -41,7 +41,18 @@ val emotionSynonyms = mapOf(
 )
 
 fun mapVectorToEmotion(vector: EmotionVector): MappedEmotion {
+    // 1. Start the timer immediately
+    val startTime = System.nanoTime()
+
+    // 2. Run the actual mapping logic
     val emotionLabel = mapEmotionWithDecisionWeb(vector)
+
+    // 3. Stop the timer and calculate micros
+    val endTime = System.nanoTime()
+    val latencyMicros = (endTime - startTime) / 1000
+
+    Log.d("LATENCY_TEST", "MAPPING LOGIC: ${latencyMicros}µs -> Label: $emotionLabel")
+
     return createMappedEmotion(emotionLabel)
 }
 
@@ -49,15 +60,16 @@ internal fun mapEmotionWithDecisionWeb(vector: EmotionVector): String {
     val (arousal, valence, dominance) = vector
 
     return when {
-        // High Valence (> 0.53): Shrinking Neutral by lowering the entry gate for positive emotions
+        // POSITIVE BRANCH (V > 0.53)
         valence > 0.53f -> {
             when {
-                arousal > 0.55f && dominance > 0.55f -> {
+                arousal > 0.60f && dominance > 0.60f -> {
                     when {
                         (arousal > 0.75f && valence > 0.80f && dominance > 0.70f) ||
                                 (arousal in 0.65f..0.75f && valence > 0.70f && dominance in 0.60f..0.75f) ||
                                 (arousal in 0.55f..0.65f && valence > 0.65f) -> "Joy"
-                        valence in 0.39f..0.57f && arousal > 0.67f -> "Surprise"
+
+                        (valence in 0.53f..0.57f && arousal > 0.67f) -> "Surprise"
                         else -> "Joy"
                     }
                 }
@@ -66,65 +78,37 @@ internal fun mapEmotionWithDecisionWeb(vector: EmotionVector): String {
             }
         }
 
-        // Low/Mid Valence (< 0.53): Negative and Neutral branch
+        // NEGATIVE BRANCH (V < 0.53)
         valence < 0.53f -> {
-            if (arousal > 0.65f && valence in 0.39f..0.43f) return "Surprise"
+            // Priority Surprise Trap
+            if (arousal > 0.62f && valence in 0.3f..0.57f && dominance > 0.69f) return "Surprise"
 
             when {
-                // High Arousal Negative
-                arousal > 0.60f -> {
+                arousal > 0.60f -> { // High Arousal Negative
                     if (dominance > 0.60f) {
                         when {
-                            (arousal > 0.68f && valence < 0.30f && dominance > 0.69f) ||
-                                    (arousal in 0.60f..0.75f && valence < 0.30f && dominance > 0.65f) ||
-                                    (valence < 0.12f) -> "Anger"
-                            arousal in 0.60f..0.69f && valence in 0.04f..0.44f && dominance in 0.60f..0.69f -> "Disgust"
+                            (arousal > 0.7f && valence < 0.28f && dominance > 0.7f) -> "Anger"
                             else -> "Disgust"
                         }
-                    } else {
-                        when {
-                            (arousal > 0.63f && valence < 0.38f && dominance > 0.50f) ||
-                                    (arousal > 0.70f && valence < 0.30f) ||
-                                    (arousal in 0.60f..0.70f && valence < 0.35f) -> "Fear"
-                            else -> "Fear"
-                        }
                     }
+                    else "Fear"
                 }
-                // Low Arousal branch: Expanded to catch Sadness at V:0.49 A:0.23 D:0.47
-                arousal < 0.48f -> {
-                    when {
-                        // Expanded cubby for Sadness: includes valence up to 0.51 and dominance up to 0.52
-                        (arousal < 0.35f && valence < 0.51f && dominance < 0.52f) ||
-                                (valence < 0.47f && dominance < 0.52f) -> "Sadness"
-                        else -> "Neutral"
-                    }
+                arousal < 0.48f -> { // Low Arousal Negative
+                    if ((arousal < 0.35f && valence < 0.51f && dominance < 0.52f) ||
+                        (valence < 0.47f && dominance < 0.47f)) "Sadness"
+                    else if (dominance in 0.48f..0.56f && valence in -1.00f..0.23f) "Disgust"
+                    else "Neutral"
                 }
-                else -> {
-                    when {
-                        dominance < 0.58f && valence < 0.33f -> "Fear"
-                        dominance > 0.58f && valence < 0.30f -> "Disgust"
-                        else -> "Neutral"
-                    }
-                }
+
+                else -> if (dominance < 0.58f && valence < 0.41f) "Fear" else if (dominance > 0.58f) "Disgust" else "Neutral"
             }
         }
 
-        // Catch-all Neutral zone: Shrink the range to force transitions to other emotions
+        // TRANSITION ZONE (V ≈ 0.53)
         else -> {
-            if (arousal > 0.72f && valence in 0.41f..0.60f) return "Surprise"
-
-            when {
-                arousal > 0.65f -> {
-                    when {
-                        dominance in 0.50f..0.67f -> "Surprise"
-                        dominance > 0.65f -> "Neutral"
-                        else -> "Fear"
-                    }
-                }
-                // Shrunk the Neutral core box
-                arousal in 0.47f..0.58f && dominance in 0.48f..0.60f -> "Neutral"
-                else -> findClosestEmotion(vector)
-            }
+            if (arousal > 0.72f && valence in 0.41f..0.60f) "Surprise"
+            else if (arousal in 0.47f..0.58f && dominance in 0.48f..0.60f) "Neutral"
+            else findClosestEmotion(vector)
         }
     }
 }
@@ -137,17 +121,16 @@ private fun findClosestEmotion(vector: EmotionVector): String {
     val emotionCenters = mapOf(
         "Neutral" to EmotionVector(arousal = 0.54f, valence = 0.52f, dominance = 0.55f),
         "Joy" to EmotionVector(arousal = 0.7f, valence = 0.78f, dominance = 0.65f),
-        "Anger" to EmotionVector(arousal = 0.69f, valence = 0.15f, dominance = 0.69f),
+        "Anger" to EmotionVector(arousal = 0.79f, valence = 0.12f, dominance = 0.75f),
         "Sadness" to EmotionVector(arousal = 0.35f, valence = 0.25f, dominance = 0.35f),
         "Fear" to EmotionVector(arousal = 0.54f, valence = 0.39f, dominance = 0.49f),
-        "Disgust" to EmotionVector(arousal = 0.57f, valence = 0.32f, dominance = 0.61f),
+        "Disgust" to EmotionVector(arousal = 0.62f, valence = 0.28f, dominance = 0.61f),
         "Surprise" to EmotionVector(arousal = 0.68f, valence = 0.59f, dominance = 0.66f)
     )
 
     val closestEntry = emotionCenters.minByOrNull { distance(vector, it.value) } ?: return "Neutral"
     val minDistance = distance(vector, closestEntry.value)
 
-    // Increased threshold to 0.45 to favor specific emotions over Neutral fallback
     if (minDistance > 0.45f) return "Neutral"
 
     return when (closestEntry.key) {
